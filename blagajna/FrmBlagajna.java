@@ -2752,6 +2752,7 @@ public class FrmBlagajna extends javax.swing.JFrame {
 
         }
 
+        frmPostavke.getPodnozjeRacuna().setText(footer);
         
         toggleScreen(false);
         frmPostavke.setVisible(true);
@@ -2803,6 +2804,38 @@ public class FrmBlagajna extends javax.swing.JFrame {
     private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Dohvat dugmica.
+     * @return dugmic
+     */
+    public JButton getCmdPromet() {
+        return cmdPromet;    
+    }
+    
+    /**
+     * Dohvat dugmica.
+     * @return dugmic
+     */
+    public JButton getCmdPoslovniProstor() {
+        return cmdPoslovniProstor;
+    }
+    
+    /**
+     * Dohvat dugmica.
+     * @return dugmic
+     */
+    public JButton getCmdPopust() {
+        return cmdPopust;
+    }
+    
+    /**
+     * Dohvat dugmica.
+     * @return dugmic
+     */
+    public JButton getCmdNapomena() {
+        return cmdNapomena;
+    }
+    
     /**
      * Ucitava cjenik iz datoteke.<BR>
      *
@@ -2987,7 +3020,16 @@ public class FrmBlagajna extends javax.swing.JFrame {
             //  napuni text varijablu
             for (Proizvod p : kolicina.keySet()) {
                 int kolicinaProizvoda = kolicina.get(p);
-                text = text + formatLine(p.getNaziv().trim() + " x" + kolicinaProizvoda,
+                                
+                String stavka = p.getNaziv().trim();
+                /*
+                 * Prikaz jedinicne cijene.
+                 */
+                if (frmPostavke.isJedinicna()) {
+                    stavka = stavka + " (" + p.getCijenaIspis() + ")";
+                }
+                
+                text = text + formatLine(stavka + " x" + kolicinaProizvoda,
                         dFormat.format(p.getCijena() * kolicinaProizvoda) + " KN") + "\n";
 
                 // pokupi iznose pdv-a, pnp-a i osnovice za prikaz na racunu
@@ -2998,8 +3040,16 @@ public class FrmBlagajna extends javax.swing.JFrame {
             }           
         } else {
             for (Proizvod p : r1.getProizvodi()) {
+                String stavka = p.getNaziv().trim();
+                /*
+                 * Prikaz jedinicne cijene.
+                 */
+                if (frmPostavke.isJedinicna()) {
+                    stavka = stavka + " (" + p.getCijenaIspis() + ")";
+                }
+                
                 text = text
-                        + formatLine(p.getNaziv().trim(),
+                        + formatLine(stavka,
                         dFormat.format(p.getCijena()) + " KN") + "\n";
 
                 // pokupi iznose pdv-a, pnp-a i osnovice za prikaz na racunu
@@ -3233,6 +3283,15 @@ public class FrmBlagajna extends javax.swing.JFrame {
     }
     
     /**
+     * Podnozje racuna. Sprema podnozje u podnozje.txt takodjer.
+     * @param newFooter tekst podnozja racuna
+     */
+    public void setFooter(String newFooter) {
+        footer = newFooter;
+        saveFooter("podnozje.txt");
+    }
+    
+    /**
      * Postavlja blagajnika prema oib-u. Oib mora biti jedan od onih u listi
      * blagajnika.<BR>
      *
@@ -3299,7 +3358,29 @@ public class FrmBlagajna extends javax.swing.JFrame {
 
 
     }
+    
+    /**
+     * Sprema podnozje u text datoteku
+     *
+     * @param fileName naziv datoteke
+     */
+    private void saveFooter(String fileName) {
+        PrintWriter out = null;
+        String[] linije = footer.split("\n");
+        try {
+            out = new PrintWriter(fileName);
+            for (String linija : linije) {            
+                out.println(linija);
+            }
+            out.close();
+        } catch (FileNotFoundException ex) {
+            logger.log(Level.SEVERE, "saveFooter()", ex);
+        } finally {
+            out.close();
+        }
 
+    }
+    
     /**
      * Sprema racun u text datoteku
      *

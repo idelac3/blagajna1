@@ -8,6 +8,7 @@
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -328,7 +329,6 @@
             </Component>
             <Component class="javax.swing.JTextField" name="txtBlagajna">
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtBlagajnaActionPerformed"/>
                 <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="txtBlagajnaFocusGained"/>
                 <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="txtBlagajnaFocusLost"/>
               </Events>
@@ -353,7 +353,6 @@
               </Properties>
               <Events>
                 <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="chkUSustPdvFocusGained"/>
-                <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="chkUSustPdvFocusLost"/>
               </Events>
             </Component>
           </SubComponents>
@@ -746,22 +745,43 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblIzgledDebljina" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="lblIzgledVelicina" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="lblIzgledFont" alignment="1" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cboIzgledFont" pref="491" max="32767" attributes="0"/>
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="sldIzgledVelicina" pref="146" max="32767" attributes="0"/>
-                                  <Component id="sldIzgledDebljina" pref="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="lblIzgledDebljina" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="lblIzgledVelicina" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="lblIzgledFont" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cboIzgledFont" pref="347" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="sldIzgledVelicina" pref="146" max="32767" attributes="0"/>
+                                          <Component id="sldIzgledDebljina" pref="0" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="-2" pref="148" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="lblPodnozjeRacuna" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jScrollPane1" max="32767" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="chkPromet" min="-2" max="-2" attributes="0"/>
+                                          <Component id="chkPoslovniProstor" min="-2" max="-2" attributes="0"/>
+                                          <Component id="chkPopust" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="chkNapomena" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -771,7 +791,7 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="lblIzgledFont" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cboIzgledFont" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -786,7 +806,20 @@
                           <Component id="lblIzgledDebljina" min="-2" max="-2" attributes="0"/>
                           <Component id="sldIzgledDebljina" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="236" max="32767" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lblPodnozjeRacuna" min="-2" max="-2" attributes="0"/>
+                          <Component id="jScrollPane1" min="-2" pref="85" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="chkPoslovniProstor" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="chkPromet" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="chkPopust" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="chkNapomena" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="11" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -840,6 +873,146 @@
               <Events>
                 <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="sldIzgledDebljinaStateChanged"/>
                 <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="sldIzgledDebljinaFocusGained"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="lblPodnozjeRacuna">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Podnozje racuna:"/>
+              </Properties>
+            </Component>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTextArea" name="txtPodnozjeRacuna">
+                  <Properties>
+                    <Property name="columns" type="int" value="20"/>
+                    <Property name="rows" type="int" value="5"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="txtPodnozjeRacunaFocusGained"/>
+                  </Events>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JCheckBox" name="chkPoslovniProstor">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Poslovni prostor"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkPoslovniProstorActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chkPromet">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Promet"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkPrometActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chkPopust">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Popust"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkPopustActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chkNapomena">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Napomena"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkNapomenaActionPerformed"/>
+              </Events>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="pnlRacun">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Racun">
+                <Property name="tabTitle" type="java.lang.String" value="Racun"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
+                      <Component id="lblBrojRacuna" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="chkJedinicnaCijena" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkTransakcijskiRacun" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkKolicinskiPrikaz" min="-2" max="-2" attributes="0"/>
+                          <Component id="txtBrojRacuna" min="-2" pref="111" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace pref="387" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="lblBrojRacuna" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="txtBrojRacuna" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="chkKolicinskiPrikaz" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="chkTransakcijskiRacun" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="chkJedinicnaCijena" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="244" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="lblBrojRacuna">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Broj racuna:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="txtBrojRacuna">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="jTextField1"/>
+              </Properties>
+              <Events>
+                <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="txtBrojRacunaFocusGained"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chkKolicinskiPrikaz">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Kolicinski prikaz"/>
+              </Properties>
+              <Events>
+                <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="chkKolicinskiPrikazFocusGained"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chkTransakcijskiRacun">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Transakcijski racun"/>
+              </Properties>
+              <Events>
+                <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="chkTransakcijskiRacunFocusGained"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chkJedinicnaCijena">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Jedinicna cijena"/>
+              </Properties>
+              <Events>
+                <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="chkJedinicnaCijenaFocusGained"/>
               </Events>
             </Component>
           </SubComponents>

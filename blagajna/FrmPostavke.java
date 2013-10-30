@@ -106,6 +106,7 @@ public class FrmPostavke extends javax.swing.JFrame {
     private boolean kolicina;
     private boolean arhiviraj;
     private boolean transakcijski;
+    private boolean jedinicna;
 
     /*
      * -------------------------
@@ -427,6 +428,22 @@ public class FrmPostavke extends javax.swing.JFrame {
         sldIzgledVelicina.setValue(izgledVelicina);
         sldIzgledDebljina.setValue(izgledDebljina);
         
+        /*
+         * Postavi vidljivost dugmica prema postavkama u postavke.txt datoteci.
+         */
+        frmBlagajna.getCmdNapomena().setVisible(chkNapomena.isSelected());
+        frmBlagajna.getCmdPoslovniProstor().setVisible(chkPoslovniProstor.isSelected());
+        frmBlagajna.getCmdPromet().setVisible(chkPromet.isSelected());
+        frmBlagajna.getCmdPopust().setVisible(chkPopust.isSelected());
+
+        /*
+         * Racun panel
+         */
+        txtBrojRacuna.setText(String.valueOf(brRac));
+        chkKolicinskiPrikaz.setSelected(kolicina);
+        chkTransakcijskiRacun.setSelected(transakcijski);
+        chkJedinicnaCijena.setSelected(jedinicna);
+        
         frmBlagajna.latch.countDown();
 
     }
@@ -512,11 +529,16 @@ public class FrmPostavke extends javax.swing.JFrame {
         iniSettings.set(sekcija, "kolicina", String.valueOf(kolicina));
         iniSettings.set(sekcija, "arhiviraj", String.valueOf(arhiviraj));
         iniSettings.set(sekcija, "transakcijski", String.valueOf(transakcijski));
+        iniSettings.set(sekcija, "jedinicna", String.valueOf(jedinicna));
 
         sekcija = "Izgled";
         iniSettings.set(sekcija, "font", izgledFont);
         iniSettings.set(sekcija, "velicina", String.valueOf(izgledVelicina));
         iniSettings.set(sekcija, "debljina", String.valueOf(izgledDebljina));
+        iniSettings.set(sekcija, "poslovniProstor", String.valueOf(chkPoslovniProstor.isSelected()));
+        iniSettings.set(sekcija, "promet", String.valueOf(chkPromet.isSelected()));
+        iniSettings.set(sekcija, "popust", String.valueOf(chkPopust.isSelected()));
+        iniSettings.set(sekcija, "napomena", String.valueOf(chkNapomena.isSelected()));
 
         sekcija = "Stupci";
         for (Integer stupac : new Integer[]{0, 1, 2, 3}) {
@@ -608,6 +630,19 @@ public class FrmPostavke extends javax.swing.JFrame {
         cboIzgledFont = new javax.swing.JComboBox();
         sldIzgledVelicina = new javax.swing.JSlider();
         sldIzgledDebljina = new javax.swing.JSlider();
+        lblPodnozjeRacuna = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        txtPodnozjeRacuna = new javax.swing.JTextArea();
+        chkPoslovniProstor = new javax.swing.JCheckBox();
+        chkPromet = new javax.swing.JCheckBox();
+        chkPopust = new javax.swing.JCheckBox();
+        chkNapomena = new javax.swing.JCheckBox();
+        pnlRacun = new javax.swing.JPanel();
+        lblBrojRacuna = new javax.swing.JLabel();
+        txtBrojRacuna = new javax.swing.JTextField();
+        chkKolicinskiPrikaz = new javax.swing.JCheckBox();
+        chkTransakcijskiRacun = new javax.swing.JCheckBox();
+        chkJedinicnaCijena = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Postavke");
@@ -758,11 +793,6 @@ public class FrmPostavke extends javax.swing.JFrame {
             }
         });
 
-        txtBlagajna.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtBlagajnaActionPerformed(evt);
-            }
-        });
         txtBlagajna.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 txtBlagajnaFocusGained(evt);
@@ -788,9 +818,6 @@ public class FrmPostavke extends javax.swing.JFrame {
         chkUSustPdv.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 chkUSustPdvFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                chkUSustPdvFocusLost(evt);
             }
         });
 
@@ -1203,6 +1230,45 @@ public class FrmPostavke extends javax.swing.JFrame {
             }
         });
 
+        lblPodnozjeRacuna.setText("Podnozje racuna:");
+
+        txtPodnozjeRacuna.setColumns(20);
+        txtPodnozjeRacuna.setRows(5);
+        txtPodnozjeRacuna.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtPodnozjeRacunaFocusGained(evt);
+            }
+        });
+        jScrollPane1.setViewportView(txtPodnozjeRacuna);
+
+        chkPoslovniProstor.setText("Poslovni prostor");
+        chkPoslovniProstor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkPoslovniProstorActionPerformed(evt);
+            }
+        });
+
+        chkPromet.setText("Promet");
+        chkPromet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkPrometActionPerformed(evt);
+            }
+        });
+
+        chkPopust.setText("Popust");
+        chkPopust.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkPopustActionPerformed(evt);
+            }
+        });
+
+        chkNapomena.setText("Napomena");
+        chkNapomena.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkNapomenaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnlIzgledLayout = new javax.swing.GroupLayout(pnlIzgled);
         pnlIzgled.setLayout(pnlIzgledLayout);
         pnlIzgledLayout.setHorizontalGroup(
@@ -1210,23 +1276,38 @@ public class FrmPostavke extends javax.swing.JFrame {
             .addGroup(pnlIzgledLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblIzgledDebljina, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(lblIzgledVelicina, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(lblIzgledFont, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cboIzgledFont, 0, 491, Short.MAX_VALUE)
                     .addGroup(pnlIzgledLayout.createSequentialGroup()
-                        .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(sldIzgledVelicina, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
-                            .addComponent(sldIzgledDebljina, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblIzgledDebljina, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(lblIzgledVelicina, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(lblIzgledFont, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cboIzgledFont, 0, 347, Short.MAX_VALUE)
+                            .addGroup(pnlIzgledLayout.createSequentialGroup()
+                                .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(sldIzgledVelicina, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
+                                    .addComponent(sldIzgledDebljina, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGap(148, 148, 148))
+                    .addGroup(pnlIzgledLayout.createSequentialGroup()
+                        .addComponent(lblPodnozjeRacuna)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1)
+                            .addGroup(pnlIzgledLayout.createSequentialGroup()
+                                .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(chkPromet)
+                                    .addComponent(chkPoslovniProstor)
+                                    .addComponent(chkPopust)
+                                    .addComponent(chkNapomena))
+                                .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         pnlIzgledLayout.setVerticalGroup(
             pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlIzgledLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(58, 58, 58)
                 .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblIzgledFont)
                     .addComponent(cboIzgledFont, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1238,10 +1319,85 @@ public class FrmPostavke extends javax.swing.JFrame {
                 .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblIzgledDebljina)
                     .addComponent(sldIzgledDebljina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(236, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(pnlIzgledLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblPodnozjeRacuna)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(chkPoslovniProstor)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chkPromet)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chkPopust)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chkNapomena)
+                .addContainerGap(11, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Izgled", pnlIzgled);
+
+        lblBrojRacuna.setText("Broj racuna:");
+
+        txtBrojRacuna.setText("jTextField1");
+        txtBrojRacuna.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtBrojRacunaFocusGained(evt);
+            }
+        });
+
+        chkKolicinskiPrikaz.setText("Kolicinski prikaz");
+        chkKolicinskiPrikaz.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                chkKolicinskiPrikazFocusGained(evt);
+            }
+        });
+
+        chkTransakcijskiRacun.setText("Transakcijski racun");
+        chkTransakcijskiRacun.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                chkTransakcijskiRacunFocusGained(evt);
+            }
+        });
+
+        chkJedinicnaCijena.setText("Jedinicna cijena");
+        chkJedinicnaCijena.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                chkJedinicnaCijenaFocusGained(evt);
+            }
+        });
+
+        javax.swing.GroupLayout pnlRacunLayout = new javax.swing.GroupLayout(pnlRacun);
+        pnlRacun.setLayout(pnlRacunLayout);
+        pnlRacunLayout.setHorizontalGroup(
+            pnlRacunLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlRacunLayout.createSequentialGroup()
+                .addGap(36, 36, 36)
+                .addComponent(lblBrojRacuna)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlRacunLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(chkJedinicnaCijena)
+                    .addComponent(chkTransakcijskiRacun)
+                    .addComponent(chkKolicinskiPrikaz)
+                    .addComponent(txtBrojRacuna, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(387, Short.MAX_VALUE))
+        );
+        pnlRacunLayout.setVerticalGroup(
+            pnlRacunLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlRacunLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlRacunLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblBrojRacuna)
+                    .addComponent(txtBrojRacuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(chkKolicinskiPrikaz)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(chkTransakcijskiRacun)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(chkJedinicnaCijena)
+                .addContainerGap(244, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Racun", pnlRacun);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -1360,7 +1516,18 @@ public class FrmPostavke extends javax.swing.JFrame {
             izgledDebljina = sldIzgledDebljina.getValue();
             izgled = new Izgled(izgledFont, izgledVelicina,
                 izgledDebljina);
-                    
+            frmBlagajna.getCmdNapomena().setVisible(chkNapomena.isSelected());
+            frmBlagajna.getCmdPoslovniProstor().setVisible(chkPoslovniProstor.isSelected());
+            frmBlagajna.getCmdPromet().setVisible(chkPromet.isSelected());
+            frmBlagajna.getCmdPopust().setVisible(chkPopust.isSelected());
+            frmBlagajna.setFooter(txtPodnozjeRacuna.getText());
+             
+            // Racun postavke
+            brRac = Integer.parseInt(txtBrojRacuna.getText());
+            transakcijski = chkTransakcijskiRacun.isSelected();
+            kolicina = chkKolicinskiPrikaz.isSelected();
+            jedinicna = chkJedinicnaCijena.isSelected();
+            
             // ova funkcija sprema vr.lokalnih var. u postavke.txt
             postavkeSave("postavke.txt");
 
@@ -1466,10 +1633,6 @@ public class FrmPostavke extends javax.swing.JFrame {
         selText(txtKljuc);
 
     }//GEN-LAST:event_txtKljucFocusGained
-
-    private void txtBlagajnaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBlagajnaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtBlagajnaActionPerformed
 
     private void txtBlagajnaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtBlagajnaFocusGained
 
@@ -1628,10 +1791,6 @@ public class FrmPostavke extends javax.swing.JFrame {
     private void chkUSustPdvFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_chkUSustPdvFocusGained
         txtStatus.setText("Ako ste u sustavu pdv-a, tada postavite. Ova postavka utjece na prijavu racuna u PU.");
     }//GEN-LAST:event_chkUSustPdvFocusGained
-
-    private void chkUSustPdvFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_chkUSustPdvFocusLost
-        // TODO add your handling code here:
-    }//GEN-LAST:event_chkUSustPdvFocusLost
 
     private void txtTimeoutFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTimeoutFocusGained
         txtStatus.setText("Timeout parametar sluzi za definiranje max. vremena koliko program ceka na JIR odgovor iz PU.\n"
@@ -2004,7 +2163,7 @@ public class FrmPostavke extends javax.swing.JFrame {
         /**
          * Kolicinski prikaz artikala na racunu.
          */
-        if (this.kolicina) {
+        if (chkKolicinskiPrikaz.isSelected()) {
             Hashtable<Proizvod, Integer> kolicina = new Hashtable<Proizvod, Integer>();
             for (Proizvod p : r1.getProizvodi()) {
                 kolicina.put(p, r1.getProizvodKolicina(p));
@@ -2013,7 +2172,14 @@ public class FrmPostavke extends javax.swing.JFrame {
             //  napuni text varijablu
             for (Proizvod p : kolicina.keySet()) {
                 int kolicinaProizvoda = kolicina.get(p);
-                text = text + formatLine(p.getNaziv().trim() + " x" + kolicinaProizvoda,
+                String stavka = p.getNaziv().trim();
+                /*
+                 * Prikaz jedinicne cijene.
+                 */
+                if (chkJedinicnaCijena.isSelected()) {
+                    stavka = stavka + " (" + p.getCijenaIspis() + ")";
+                }
+                text = text + formatLine(stavka + " x" + kolicinaProizvoda,
                         dFormat.format(p.getCijena() * kolicinaProizvoda) + " KN", duzinaLinije) + "\n";
 
                 // pokupi iznose pdv-a, pnp-a i osnovice za prikaz na racunu
@@ -2024,8 +2190,15 @@ public class FrmPostavke extends javax.swing.JFrame {
             }
         } else {
             for (Proizvod p : r1.getProizvodi()) {
+                String stavka = p.getNaziv().trim();
+                /*
+                 * Prikaz jedinicne cijene.
+                 */
+                if (chkJedinicnaCijena.isSelected()) {
+                    stavka = stavka + " (" + p.getCijenaIspis() + ")";
+                }
                 text = text
-                        + formatLine(p.getNaziv().trim(),
+                        + formatLine(stavka,
                         dFormat.format(p.getCijena()) + " KN", duzinaLinije) + "\n";
 
                 // pokupi iznose pdv-a, pnp-a i osnovice za prikaz na racunu
@@ -2158,6 +2331,49 @@ public class FrmPostavke extends javax.swing.JFrame {
         sldIzgledDebljina.setToolTipText(String.valueOf(sldIzgledDebljina.getValue()));
     }//GEN-LAST:event_sldIzgledDebljinaStateChanged
 
+    private void chkPrometActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkPrometActionPerformed
+        txtStatus.setText("Dugmic Promet se moze prikazati ili sakriti u glavnom prozoru.");
+    }//GEN-LAST:event_chkPrometActionPerformed
+
+    private void chkNapomenaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkNapomenaActionPerformed
+        txtStatus.setText("Dugmic Napomena se moze prikazati ili sakriti u glavnom prozoru.");
+    }//GEN-LAST:event_chkNapomenaActionPerformed
+
+    private void chkPopustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkPopustActionPerformed
+        txtStatus.setText("Dugmic Popust se moze prikazati ili sakriti u glavnom prozoru.");
+    }//GEN-LAST:event_chkPopustActionPerformed
+
+    private void chkPoslovniProstorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkPoslovniProstorActionPerformed
+        txtStatus.setText("Dugmic Poslovni Prostor se moze prikazati ili sakriti u glavnom prozoru.");
+    }//GEN-LAST:event_chkPoslovniProstorActionPerformed
+
+    private void txtPodnozjeRacunaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtPodnozjeRacunaFocusGained
+        txtStatus.setText("Tekst koji se prikazuje na dnu svakog racuna. Pogledati datoteku podnozje.txt");
+    }//GEN-LAST:event_txtPodnozjeRacunaFocusGained
+
+    private void txtBrojRacunaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtBrojRacunaFocusGained
+        txtStatus.setText("Broj racuna za izdavanje. Ova vrijednost je u vecini slucajeva ispravno postavljena automatski.");
+    }//GEN-LAST:event_txtBrojRacunaFocusGained
+
+    private void chkKolicinskiPrikazFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_chkKolicinskiPrikazFocusGained
+        txtStatus.setText("Zelite li prikaz kolicine na racunu? Ako zelite, postavite kvacicu.");
+    }//GEN-LAST:event_chkKolicinskiPrikazFocusGained
+
+    private void chkTransakcijskiRacunFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_chkTransakcijskiRacunFocusGained
+        txtStatus.setText("Kod transakcijskog racuna omogucava unos transakcijskog broja ili broja transakcije.");
+    }//GEN-LAST:event_chkTransakcijskiRacunFocusGained
+
+    private void chkJedinicnaCijenaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_chkJedinicnaCijenaFocusGained
+        txtStatus.setText("Prikaz jedinicne cijene uz svaku stavku na racunu.");
+    }//GEN-LAST:event_chkJedinicnaCijenaFocusGained
+
+    /**
+     * Podnozje racuna, tekst polje.
+     * @return txtPodnozjeRacuna objekt
+     */
+    public JTextArea getPodnozjeRacuna() {
+        return txtPodnozjeRacuna;
+    }
     /**
      * Format niza znakova za ispisa na fiksni broj znakova.<BR> Fiksni broj
      * znakova je odredjen sa duzinaLinije postavkom.<BR>
@@ -2398,15 +2614,17 @@ public class FrmPostavke extends javax.swing.JFrame {
             /* ************************** */
 
             /*
-             * Sistemske postavke (skrivene)
+             * Sistemske postavke (panel racun)
              */
             iniSettings.setDefault("1");
             brRac = Integer.parseInt(iniSettings.get("brRac"));
             iniSettings.setDefault("brzi");
             izborBlagajnika = iniSettings.get("izborBlagajnika");
+            iniSettings.setDefault("true");
             kolicina = (iniSettings.get("kolicina").equalsIgnoreCase("true"));
             arhiviraj = (iniSettings.get("arhiviraj").equalsIgnoreCase("true"));
             transakcijski = (iniSettings.get("transakcijski").equalsIgnoreCase("true"));
+            jedinicna = (iniSettings.get("jedinicna").equalsIgnoreCase("true"));
             /* ************************** */
 
             /*
@@ -2512,6 +2730,7 @@ public class FrmPostavke extends javax.swing.JFrame {
             kolicina = (iniSettings.get(sekcija, "kolicina").equalsIgnoreCase("true"));
             arhiviraj = (iniSettings.get(sekcija, "arhiviraj").equalsIgnoreCase("true"));
             transakcijski = (iniSettings.get(sekcija, "transakcijski").equalsIgnoreCase("true"));
+            jedinicna = (iniSettings.get(sekcija, "jedinicna").equalsIgnoreCase("true"));
             /* ************************** */
             
             /*
@@ -2524,10 +2743,23 @@ public class FrmPostavke extends javax.swing.JFrame {
             izgledVelicina = Integer.parseInt(iniSettings.get(sekcija, "velicina"));
             iniSettings.setDefault("35");
             izgledDebljina = Integer.parseInt(iniSettings.get(sekcija, "debljina"));
+            iniSettings.setDefault("true");
+
             /* ************************** */
             
         }
         
+        /*
+         * Vidljivost dugmica i podnozje.
+         */        
+        sekcija = "Izgled";
+        iniSettings.setDefault("true");
+        chkPoslovniProstor.setSelected(iniSettings.get(sekcija, "poslovniProstor").equalsIgnoreCase("true"));
+        chkPromet.setSelected(iniSettings.get(sekcija, "promet").equalsIgnoreCase("true"));
+        chkPopust.setSelected(iniSettings.get(sekcija, "popust").equalsIgnoreCase("true"));
+        chkNapomena.setSelected(iniSettings.get(sekcija, "napomena").equalsIgnoreCase("true"));
+        txtPodnozjeRacuna.setText(frmBlagajna.getFooter());
+            
         /*
          * Omjer podjele ekrana i sirine stupaca.
          */
@@ -2555,12 +2787,21 @@ public class FrmPostavke extends javax.swing.JFrame {
     private javax.swing.JComboBox cboFormatPapira;
     private javax.swing.JComboBox cboIzgledFont;
     private javax.swing.JComboBox cboPisac;
+    private javax.swing.JCheckBox chkJedinicnaCijena;
+    private javax.swing.JCheckBox chkKolicinskiPrikaz;
+    private javax.swing.JCheckBox chkNapomena;
+    private javax.swing.JCheckBox chkPopust;
+    private javax.swing.JCheckBox chkPoslovniProstor;
+    private javax.swing.JCheckBox chkPromet;
+    private javax.swing.JCheckBox chkTransakcijskiRacun;
     private javax.swing.JCheckBox chkUSustPdv;
     private javax.swing.JButton cmdIzlaz;
     private javax.swing.JButton cmdOK;
     private javax.swing.JButton cmdTestIspisa;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel lblBlagajna;
+    private javax.swing.JLabel lblBrojRacuna;
     private javax.swing.JLabel lblDuzinaLinije;
     private javax.swing.JLabel lblFont;
     private javax.swing.JLabel lblFormatPapira;
@@ -2573,6 +2814,7 @@ public class FrmPostavke extends javax.swing.JFrame {
     private javax.swing.JLabel lblOib;
     private javax.swing.JLabel lblPapir;
     private javax.swing.JLabel lblPisac;
+    private javax.swing.JLabel lblPodnozjeRacuna;
     private javax.swing.JLabel lblPoslijeSlanja;
     private javax.swing.JLabel lblPoslovnica;
     private javax.swing.JLabel lblPrijeSlanja;
@@ -2590,10 +2832,12 @@ public class FrmPostavke extends javax.swing.JFrame {
     private javax.swing.JPanel pnlIzbornik;
     private javax.swing.JPanel pnlIzgled;
     private javax.swing.JPanel pnlOsnovne;
+    private javax.swing.JPanel pnlRacun;
     private javax.swing.JScrollPane pnlStatus;
     private javax.swing.JSlider sldIzgledDebljina;
     private javax.swing.JSlider sldIzgledVelicina;
     private javax.swing.JTextField txtBlagajna;
+    private javax.swing.JTextField txtBrojRacuna;
     private javax.swing.JTextField txtDuzinaLinije;
     private javax.swing.JTextField txtIspisnaPovrsinaX;
     private javax.swing.JTextField txtIspisnaPovrsinaY;
@@ -2604,6 +2848,7 @@ public class FrmPostavke extends javax.swing.JFrame {
     private javax.swing.JTextField txtOib;
     private javax.swing.JTextField txtPapirX;
     private javax.swing.JTextField txtPapirY;
+    private javax.swing.JTextArea txtPodnozjeRacuna;
     private javax.swing.JTextField txtPoslijeSlanja;
     private javax.swing.JTextField txtPoslovnica;
     private javax.swing.JTextField txtPrijeSlanja;
@@ -2680,7 +2925,17 @@ public class FrmPostavke extends javax.swing.JFrame {
         }
         sldIzgledVelicina.setValue(izgledVelicina);
         sldIzgledDebljina.setValue(izgledDebljina);
-
+        chkPromet.setSelected(frmBlagajna.getCmdPromet().isVisible());
+        chkPopust.setSelected(frmBlagajna.getCmdPopust().isVisible());
+        chkPoslovniProstor.setSelected(frmBlagajna.getCmdPoslovniProstor().isVisible());
+        chkNapomena.setSelected(frmBlagajna.getCmdNapomena().isVisible());
+        txtPodnozjeRacuna.setText(frmBlagajna.getFooter());
+        
+        txtBrojRacuna.setText(String.valueOf(brRac));
+        chkTransakcijskiRacun.setSelected(transakcijski);
+        chkKolicinskiPrikaz.setSelected(kolicina);
+        chkJedinicnaCijena.setSelected(jedinicna);
+        
         
         // postavi zastavicu prikaza na true
         prikaziFileOpen = true;
@@ -2743,6 +2998,15 @@ public class FrmPostavke extends javax.swing.JFrame {
      */
     public boolean isTransakcijski() {
         return transakcijski;
+    }
+
+    /**
+     * Da li se zeli omoguciti prikaz jedinicne cijene na racunu.<BR>
+     * Ovo radi kod dodavanja stavki na racun.
+     * @return <I>true</I> ili <I>false</I>
+     */
+    public boolean isJedinicna() {
+        return jedinicna;
     }
 
     // ************************************ //
@@ -3038,7 +3302,8 @@ public class FrmPostavke extends javax.swing.JFrame {
         for (Component panel : paneli) {
             JPanel pnl = (JPanel) panel;
             for (Component comp : pnl.getComponents()) {
-                if (comp instanceof JLabel || comp instanceof JTextField || comp instanceof JCheckBox || comp instanceof JComboBox) {
+                if (comp instanceof JLabel || comp instanceof JTextField || comp instanceof JTextArea
+                        || comp instanceof JCheckBox || comp instanceof JComboBox) {
                     comp.setFont(new Font(izgled.getFontNaziv(), Font.PLAIN, izgled.getFontVelicina()));
                 }
                 if (comp instanceof JButton) {
