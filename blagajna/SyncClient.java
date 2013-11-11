@@ -35,6 +35,13 @@ public class SyncClient {
     private String hostname;
     private int port;   
     
+    private boolean connected;
+    
+    private Socket clientSocket;
+
+    private BufferedOutputStream clientOut;
+    private BufferedInputStream clientIn;
+    
     /**
      * <B>SyncClient</B> for synchronizing file(s) between server and client.<BR>
      * <BR>
@@ -132,19 +139,76 @@ public class SyncClient {
      * <BR>
      * <B>Example code</B><BR>
      * <BR>
-     * This is example of code how to start SyncClient and upload file to server on tcp port 5002:<BR><BR>
-     * <I>SyncClient client = new SyncClient("localhost", 5002);</I><BR>
-     * <I>client.sync("C:/Temp/test.zip");</I><BR><BR>
+     * This is example of code how to start SyncClient and upload file to server on tcp port 5002:
+     * <PRE>
+     * SyncClient client = new SyncClient();
+     * client.connect("localhost", 5002);
+     * client.sync("C:/Temp/test.zip");
+     * client.disconnect();
+     * </PRE>
+     * Similar to upload is download procedure:
+     * <PRE>
+     * SyncClient client = new SyncClient();
+     * client.connect("localhost", 5002);
+     * client.get("myfile.zip", "C:/Temp/myfile.zip");
+     * client.disconnect();
+     * </PRE>
+     * You should always finish session with <I>disconnect</I> call, to let remote side know
+     * that file operations are done and tcp session should be closed.<BR>
+     * <BR>
      * <B>NOTE:</B><BR>
      * Chunk size is defined in <I>BUFFER_LEN</I> variable and should remain <I>4096</I> bytes.
      * Otherwise, different value for chunk size might violate protocol.<BR>
+     */    
+    public SyncClient() {
+        this.hostname = "";
+        this.port = 0;
+        
+        connected = false;
+        
+        clientSocket = null;
+        
+        clientOut = null;
+        clientIn = null;
+    }
+    
+    /**
+     * <H1>Connect</H1>
+     * Establish a tcp connection to remote.
      * @param hostname server to connect to.
      * @param port tcp port number to connect to (by default 5002).
-     */    
-    public SyncClient(String hostname, int port) {
+     */
+    public void connect(String hostname, int port) throws IOException {                
+        
         this.hostname = hostname;
         this.port = port;
+        
+        clientSocket = new Socket(hostname, port);
+        clientSocket.setTcpNoDelay(true);
+
+        clientOut = new BufferedOutputStream(clientSocket.getOutputStream());
+        clientIn = new BufferedInputStream(clientSocket.getInputStream());
+        
+        connected = true;
     }
+    
+    /**
+     * <H1>Disconnect</H1>
+     * Disconnect from remote. This function will send QUIT message before closing
+     * connection.<BR>
+     */
+    public void disconnect() throws IOException {                
+                
+        clientOut.write("QUIT".getBytes());
+        clientOut.flush();
+        
+        clientIn.close();
+        clientOut.close();
+                
+        clientSocket.close();
+                
+        connected = false;
+    }    
     
     /**
      * Start file synchronization.<BR>
@@ -171,23 +235,23 @@ public class SyncClient {
         
         List<Integer> chunkCrc16 = new ArrayList<Integer>();
         
+        if (!connected) {
+            throw new IOException();
+        }
+        
         File file = new File(fileName);
         byte [] fileData = new byte[BUFFER_LEN];
         DataInputStream dis = new DataInputStream(new FileInputStream(file));
         
         int len = 0;
         int chunkNum = 0;        
-        
-        Socket testSocket = new Socket(hostname, port);
-        BufferedOutputStream testOut = new BufferedOutputStream(testSocket.getOutputStream());
-        BufferedInputStream testIn = new BufferedInputStream(testSocket.getInputStream());
-        
+                
         byte[] initData = ("FILE:" + fileName).getBytes();        
-        testOut.write(initData);
-        testOut.flush();
+        clientOut.write(initData);
+        clientOut.flush();
         
         byte[] crc16buffer = new byte[2];
-        while( (len = testIn.read(crc16buffer)) > 0) {       
+        while( (len = clientIn.read(crc16buffer)) > 0) {       
             int crc16value = ((crc16buffer[0] & 0xff) << 8) | (crc16buffer[1] & 0xff); 
             if(crc16value != 0) {
                 chunkCrc16.add(crc16value);
@@ -216,15 +280,15 @@ public class SyncClient {
                     int retry = 0;
                     while(!chunkUpdated && retry < 5) {
                         initData = ("CHUNK:" + chunkNum + "," + len).getBytes();
-                        testOut.write(initData);
-                        testOut.flush();
+                        clientOut.write(initData);
+                        clientOut.flush();
                         byte[] okBuffer = new byte[2];
-                        testIn.read(okBuffer);
+                        clientIn.read(okBuffer);
                         if (okBuffer[0] == 79 && okBuffer[1] == 75) {
-                            testOut.write(fileData);
-                            testOut.flush();
+                            clientOut.write(fileData);
+                            clientOut.flush();
                         }
-                        testIn.read(crc16buffer);
+                        clientIn.read(crc16buffer);
                         int crc16return = ((crc16buffer[0] & 0xff) << 8) | (crc16buffer[1] & 0xff);
                         if (crc16value == crc16return) {
                             chunkUpdated = true;
@@ -237,14 +301,8 @@ public class SyncClient {
                 chunkNum++;
             }            
         }
-        testOut.write("QUIT".getBytes());
-        testOut.flush();
-        
-        testIn.close();
-        testOut.close();
-        
+
         dis.close();
-        testSocket.close();
 
     }
     
@@ -273,6 +331,10 @@ public class SyncClient {
         
         List<Integer> chunkCrc16 = new ArrayList<Integer>();
         
+        if (!connected) {
+            throw new IOException();
+        }        
+        
         File file = new File(outputFile);
         byte [] fileData = new byte[BUFFER_LEN];
 
@@ -280,17 +342,12 @@ public class SyncClient {
 
         int len = 0;
         int chunkNum = 0;        
-        
-        Socket testSocket = new Socket(hostname, port);
-        BufferedOutputStream testOut = new BufferedOutputStream(testSocket.getOutputStream());
-        BufferedInputStream testIn = new BufferedInputStream(testSocket.getInputStream());
-        
-        byte[] initData = ("GET:" + inputFile).getBytes();        
-        testOut.write(initData);
-        testOut.flush();
+                
+        clientOut.write(("GET:" + inputFile).getBytes());
+        clientOut.flush();
         
         byte[] crc16buffer = new byte[2];
-        while( (len = testIn.read(crc16buffer)) > 0) {       
+        while( (len = clientIn.read(crc16buffer)) > 0) {       
             int crc16value = ((crc16buffer[0] & 0xff) << 8) | (crc16buffer[1] & 0xff); 
             if(crc16value != 0) {
                 chunkCrc16.add(crc16value);
@@ -316,31 +373,28 @@ public class SyncClient {
                 fetchChunk = true;
             }
             
-            if(fetchChunk) {
+            if (fetchChunk) {
 
-                initData = ("CHUNK:" + chunkNum).getBytes();
-                testOut.write(initData);
-                testOut.flush();
+                clientOut.write(("CHUNK:" + chunkNum).getBytes());
+                clientOut.flush();
 
-                len = testIn.read(fileData, 0, BUFFER_LEN);
+                len = clientIn.read(fileData, 0, BUFFER_LEN);
 
-                raf.seek(chunkNum * BUFFER_LEN);
-                raf.write(fileData, 0, len);
-
+                if (len > 0) {
+                    raf.seek(chunkNum * BUFFER_LEN);
+                    raf.write(fileData, 0, len);
+                }
+                else {
+                    System.out.println("This is problem: a crc16 value for chunk " + chunkNum + " received," +
+                            " but no data available to read.");
+                }
+                
             }
 
         }
         
         raf.setLength(raf.getFilePointer());
         raf.close();
-        
-        testOut.write("QUIT".getBytes());
-        testOut.flush();
-        
-        testIn.close();
-        testOut.close();
-        
-        testSocket.close();
 
     }
     
@@ -353,7 +407,7 @@ public class SyncClient {
      * (2) <I>LIST:</I> message is sent to server to fetch list of files and folders.<BR>
      * (3) A list is received.<BR>
      * (4) Files and folders are separated by colon (:).<BR>
-     * (5) Folders in list have slash (/) ending in name, thus making them recongnizable for further operations.<BR>
+     * (5) Folders in list have slash (/) ending in name, thus making them recognizable for further operations.<BR>
      * (6) At the end, <I>QUIT</I> message is sent to server to close session.<BR>
      * <BR>
      * <B>NOTE:</B><BR>
@@ -366,9 +420,9 @@ public class SyncClient {
         
         String retVal = "";
         
-        Socket testSocket = new Socket(hostname, port);
-        BufferedOutputStream testOut = new BufferedOutputStream(testSocket.getOutputStream());
-        BufferedInputStream testIn = new BufferedInputStream(testSocket.getInputStream());
+        if (!connected) {
+            throw new IOException();
+        }
         
         byte [] fileList = new byte[BUFFER_LEN];
         
@@ -381,24 +435,21 @@ public class SyncClient {
         }
         
         byte[] initData = ("LIST:" + pattern).getBytes();        
-        testOut.write(initData);
-        testOut.flush();
+        clientOut.write(initData);
+        clientOut.flush();
 
 
         int len;
-        while ((len = testIn.read(fileList)) > 0) {                   
+        while ((len = clientIn.read(fileList)) > 0) {                   
             String line = new String(fileList, 0, len);
             retVal = retVal + line;
-            if (line.endsWith(":")) {
+            String endMarker = "END"; 
+            if (line.endsWith(endMarker)) {
+                retVal = retVal.substring(0,
+                        retVal.length() - endMarker.length());
                 break;
             }
         }
-        
-        testOut.write("QUIT".getBytes());
-        testOut.flush();
-        
-        testIn.close();
-        testOut.close();
                 
         return retVal;
     }
@@ -425,9 +476,9 @@ public class SyncClient {
         
         String retVal = "";
         
-        Socket testSocket = new Socket(hostname, port);
-        BufferedOutputStream testOut = new BufferedOutputStream(testSocket.getOutputStream());
-        BufferedInputStream testIn = new BufferedInputStream(testSocket.getInputStream());
+        if (!connected) {
+            throw new IOException();
+        }
         
         byte [] fileList = new byte[BUFFER_LEN];
         
@@ -440,19 +491,12 @@ public class SyncClient {
         }
         
         byte[] initData = ("INFO:" + file).getBytes();        
-        testOut.write(initData);
-        testOut.flush();
+        clientOut.write(initData);
+        clientOut.flush();
 
-
-        int len = testIn.read(fileList);                   
+        int len = clientIn.read(fileList);                   
         String line = new String(fileList, 0, len);
         retVal = retVal + line;
-                
-        testOut.write("QUIT".getBytes());
-        testOut.flush();
-        
-        testIn.close();
-        testOut.close();
                 
         return retVal;
     }

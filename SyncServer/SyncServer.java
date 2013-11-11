@@ -365,6 +365,9 @@ public class SyncServer implements Runnable {
                         retVal = ":";
                     }
                     
+                    String endMarker = "END";
+                    retVal = retVal + endMarker;
+                    
                     testOut.write(retVal.getBytes());
                     testOut.flush();
                 } else if (serverCmd.startsWith("INFO:")) {

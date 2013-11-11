@@ -249,8 +249,10 @@ public class FrmOProgramu extends javax.swing.JFrame {
                                     // Uzmi syslog port i uvecaj za 1
                                     int port = Integer.parseInt(posluzitelj.substring(posluzitelj.indexOf(':') + 1)) + 1;
                                     // Sinkroniziraj
-                                    SyncClient syncClient = new SyncClient(ime, port);
+                                    SyncClient syncClient = new SyncClient();
+                                    syncClient.connect(ime, port);
                                     syncClient.sync(tempFileAdjusted);
+                                    syncClient.disconnect();
                                 }
                             }
                             
