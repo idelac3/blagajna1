@@ -51,6 +51,14 @@ public class SyncServer implements Runnable {
      * LIST:<I>pattern</I><BR>
      * INFO:<I>filename</I><BR>
      * </UL>
+     * Each command is a string encapsulated in markers for start and end.<BR>
+     * By default, start marker is <I>##BEGIN##</I> and end marker is <I>##END##</I>.
+     * Markers assure that commands are recognized during transmission of data.<BR>
+     * For example, <I>FILE</I> command will be sent as:<BR>
+     * <I>##BEGIN##FILE:myData.zip##END##</I><BR>
+     * to server. In general, every command or replay sent in string is encapsulated in markers.<BR>
+     * <BR>
+     * In the following tables, for illustration all commands and replies are without markers for easier reading.<BR>
      * <BR>
      * <B>FILE</B><BR>
      * <BR>
@@ -89,10 +97,14 @@ public class SyncServer implements Runnable {
      * <TR><TD>(1)</TD><TD> GET:<I>myfile.zip</I></TD><TD>-------&gt;</TD><TD></TD></TR>
      * <TR><TD>(2)</TD><TD> </TD><TD>&lt;-------</TD><TD>crc16 values</TD></TR>
      * <TR><TD>(3)</TD><TD> CHUNK:<I>1</I> </TD><TD>-------&gt;</TD><TD></TD></TR>
-     * <TR><TD>(4)</TD><TD> </TD><TD>&lt;-------</TD><TD>data</TD></TR>
+     * <TR><TD>(4)</TD><TD>  </TD><TD>&lt;-------</TD><TD>SIZE:<I>4096</I></TD></TR>
+     * <TR><TD>(5)</TD><TD> OK </TD><TD>-------&gt;</TD><TD></TD></TR>
+     * <TR><TD>(6)</TD><TD> </TD><TD>&lt;-------</TD><TD>data</TD></TR>
      * <TR><TD>...</TD><TD>...</TD><TD>...</TD><TD>...</TD></TR>
      * <TR><TD>(x)</TD><TD> CHUNK:<I>n</I> </TD><TD>-------&gt;</TD><TD></TD></TR>
-     * <TR><TD>(x+1)</TD><TD> </TD><TD>&lt;-------</TD><TD>data</TD></TR>
+     * <TR><TD>(x+1)</TD><TD>  </TD><TD>&lt;-------</TD><TD>SIZE:<I>xx</I></TD></TR>
+     * <TR><TD>(x+2)</TD><TD> OK </TD><TD>-------&gt;</TD><TD></TD></TR>
+     * <TR><TD>(x+3)</TD><TD> </TD><TD>&lt;-------</TD><TD>data</TD></TR>
      * <TR><TD>last</TD><TD> QUIT</TD><TD>-------&gt;</TD><TD></TD></TR>
      * </TABLE><BR>
      * <B>LIST</B><BR>
@@ -178,16 +190,66 @@ public class SyncServer implements Runnable {
         String FILEfilename = "";        
         String GETfilename = "";
 
+        /*
+         * Buffer and length.
+         */
         byte[] buffer = new byte[BUFFER_LEN];
         int len = 0;
 
+        /*
+         * Markers for start and end.
+         */
+        final String markerStart = "##BEGIN##";
+        final String markerEnd = "##END##";
+        
+        /*
+         * Quit flag to terminate while loop.
+         */
+        boolean quitFlag = false;
+        
+        /*
+         * Compatibility flag.
+         */
+        boolean compatibilityFlag = false;
+        
         try {
 
             BufferedOutputStream testOut = new BufferedOutputStream(serverSocket.getOutputStream());
             BufferedInputStream testIn = new BufferedInputStream(serverSocket.getInputStream());
 
-            while ((len = testIn.read(buffer)) > 0) {
-                String serverCmd = new String(buffer, 0, len, "UTF-8");
+            //while ((len = testIn.read(buffer)) > 0) {
+            while (!quitFlag) {
+                //String serverCmd = new String(buffer, 0, len, "UTF-8");
+            	String serverCmd = "";
+            	for (byte data; (data = (byte) testIn.read()) > -1;) {
+            		serverCmd = serverCmd + String.valueOf( (char)data );
+            		if (serverCmd.startsWith(markerStart) && serverCmd.endsWith(markerEnd)) {
+            			int beginIndex = markerStart.length();
+            			int endIndex = serverCmd.indexOf(markerEnd);
+            			serverCmd = serverCmd.substring(beginIndex, endIndex);
+            			compatibilityFlag = false;
+            			break;
+            		}
+            		else if (serverCmd.startsWith("FILE:") && serverCmd.endsWith(".zip")) {
+            			// Just for compatiblity for old clients who upload only zip files
+            			// via FILE method.
+            			compatibilityFlag = true;
+            			break;
+            		}
+            		else {
+            			if (compatibilityFlag) {
+            				if (serverCmd.startsWith("CHUNK:")) {
+            					len = testIn.read(buffer);
+            					serverCmd = serverCmd + new String(buffer, 0, len);
+            					break;
+            				}
+            				else if (serverCmd.startsWith("QUIT")) {
+            					break;
+            				}
+            			}
+            		}
+            	}
+            	
                 if (serverCmd.startsWith("FILE:")) {
                     serverCmd = serverCmd.substring("FILE:".length());
                     while (serverCmd.indexOf('/') >= 0) {
@@ -228,11 +290,18 @@ public class SyncServer implements Runnable {
                     }
                     testOut.flush();
                 } else if (serverCmd.startsWith("CHUNK:") && FILEfilename.length() > 0) {
-                    int chunkNum = Integer.parseInt(serverCmd.substring(serverCmd.indexOf(':') + 1, serverCmd.indexOf(',')));
-                    int chunkSize = Integer.parseInt(serverCmd.substring(serverCmd.indexOf(',') + 1));
+                    int chunkNum = getNumeric(serverCmd.substring(serverCmd.indexOf(':') + 1, serverCmd.indexOf(',')));
+                    int chunkSize = getNumeric(serverCmd.substring(serverCmd.indexOf(',') + 1));
                     wr("Chunk: " + chunkNum + ", Size: " + chunkSize);
-                    testOut.write("OK".getBytes());
+                    
+                    if (compatibilityFlag) {                    
+                    	testOut.write("OK".getBytes());
+                    }
+                    else {
+                    	testOut.write((markerStart + "OK" + markerEnd).getBytes());
+                    }                    
                     testOut.flush();
+                    
                     int dataRead = 0;
                     while (dataRead < chunkSize) {
                         dataRead = dataRead + testIn.read(buffer, dataRead, chunkSize - dataRead);
@@ -269,6 +338,7 @@ public class SyncServer implements Runnable {
                         byte[] fileData = new byte[BUFFER_LEN];
                         DataInputStream dis = new DataInputStream(new FileInputStream(file));
 
+                        len = 0;
                         while (len >= 0) {
                             len = dis.read(fileData, 0, BUFFER_LEN);
                             if (len > 0) {
@@ -291,7 +361,7 @@ public class SyncServer implements Runnable {
                     }
                     testOut.flush();          
                 } else if (serverCmd.startsWith("CHUNK:") && GETfilename.length() > 0) {                    
-                    int chunkNum = Integer.parseInt(serverCmd.substring(serverCmd.indexOf(':') + 1));
+                    int chunkNum = getNumeric(serverCmd.substring(serverCmd.indexOf(':') + 1));
                     
                     File file = new File(GETfilename);
                     
@@ -302,7 +372,19 @@ public class SyncServer implements Runnable {
                         len = raf.read(buffer, 0, BUFFER_LEN);
                         raf.close();
                         
-                        testOut.write(buffer, 0, len);      
+                        testOut.write((markerStart + "SIZE:" + String.valueOf(len) + markerEnd).getBytes());
+                        testOut.flush();
+                        
+                        byte[] okBuffer = new byte[markerStart.length() + "OK".length() + markerEnd.length()];
+                        int okLen = testIn.read(okBuffer);
+                        String okReply = new String(okBuffer, 0, okLen);
+                        
+                        if (okReply.indexOf("OK") > 0) {                        
+                        	testOut.write(buffer, 0, len);  
+                        }
+                        else {
+                        	wr("OK not found in reply, after SIZE is sent.");
+                        }
                         
                     }
                     
@@ -365,8 +447,7 @@ public class SyncServer implements Runnable {
                         retVal = ":";
                     }
                     
-                    String endMarker = "END";
-                    retVal = retVal + endMarker;
+                    retVal = markerStart + retVal + markerEnd;
                     
                     testOut.write(retVal.getBytes());
                     testOut.flush();
@@ -391,11 +472,47 @@ public class SyncServer implements Runnable {
                         retVal = "TYPE:" + fType + ",SIZE:" + fSize + ",DATE:" + fDate;
                     }
                     
+                    retVal = markerStart + retVal + markerEnd;
+                    
                     testOut.write(retVal.getBytes());
+                    testOut.flush();
+                } else if (serverCmd.startsWith("CHECKSUM:")) {
+                	String item = serverCmd.substring("CHECKSUM:".length());
+                    wr("Checksum = " + item);
+                    
+                    File file = new File(item);
+                    chunkCrc16.clear();
+                    
+                    if (file.exists()) {
+
+                        byte[] fileData = new byte[BUFFER_LEN];
+                        DataInputStream dis = new DataInputStream(new FileInputStream(file));
+
+                        len = 0;
+                        while (len >= 0) {
+                            len = dis.read(fileData, 0, BUFFER_LEN);
+                            if (len > 0) {
+                                int crc16value = checksum.calculate(fileData, 0, len);
+                                chunkCrc16.add(crc16value);
+                                wr("Checksum: " + String.format("%02X", crc16value));
+                            }
+                        }
+
+                        dis.close();
+                    }
+                    chunkCrc16.add(0);
+
+                    for (Integer value : chunkCrc16) {
+                        byte[] crc16value = { 0x00, 0x00 };
+                        int chunkChecksum = value;
+                        crc16value[0] = (byte) ((chunkChecksum >> 8) & 0xff);
+                        crc16value[1] = (byte) (chunkChecksum & 0xff);
+                        testOut.write(crc16value);
+                    }
                     testOut.flush();
                     
                 } else if (serverCmd.startsWith("QUIT")) {
-                    break;
+                    quitFlag = true;
                 }
             }
 
@@ -412,6 +529,27 @@ public class SyncServer implements Runnable {
         logEntry = logEntry + arg + "\n";
     }
 
+    /**
+     * Parse numbers in begining, and truncate the rest.<BR>
+     * Only integers.
+     * @param str string which holds number
+     * @return a valid integer 
+     */
+    private int getNumeric(String str) {
+    	String retVal = "0";
+    	int len = str.length();
+    	for (int i = 0; i < len; i++) {
+    		if (str.charAt(i) >= '0' && str.charAt(i) <= '9') {
+    			retVal = retVal + str.charAt(i);
+    		}
+    		else {
+    			// break on first non numeric char
+    			break;
+    		}
+    	}
+    	return Integer.parseInt(retVal);
+    }
+    
     /**
      * Log entries collected during SyncServer operation.
      * @return log entry.

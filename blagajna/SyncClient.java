@@ -42,6 +42,9 @@ public class SyncClient {
     private BufferedOutputStream clientOut;
     private BufferedInputStream clientIn;
     
+    private final String markerStart = "##BEGIN##";
+    private final String markerEnd = "##END##";
+    
     /**
      * <B>SyncClient</B> for synchronizing file(s) between server and client.<BR>
      * <BR>
@@ -53,7 +56,17 @@ public class SyncClient {
      * GET:<I>filename</I><BR>
      * LIST:<I>pattern</I><BR>
      * INFO:<I>filename</I><BR>
+     * CHECKSUM:<I>filename</I><BR>
      * </UL>
+     * Each command is a string encapsulated in markers for start and end.<BR>
+     * By default, start marker is <I>##BEGIN##</I> and end marker is <I>##END##</I>.
+     * Markers assure that commands are recognized during transmission of data.<BR>
+     * For example, <I>FILE</I> command will be sent as:<BR>
+     * <I>##BEGIN##FILE:myData.zip##END##</I><BR>
+     * to server. In general, every command or replay sent in string is encapsulated in markers.<BR>
+     * <BR>
+     * In the following tables, for illustration all commands and replies are without markers for easier reading.<BR>
+     * <BR>
      * <BR>
      * <B>FILE</B><BR>
      * <BR>
@@ -92,10 +105,14 @@ public class SyncClient {
      * <TR><TD>(1)</TD><TD> GET:<I>myfile.zip</I></TD><TD>-------&gt;</TD><TD></TD></TR>
      * <TR><TD>(2)</TD><TD> </TD><TD>&lt;-------</TD><TD>crc16 values</TD></TR>
      * <TR><TD>(3)</TD><TD> CHUNK:<I>1</I> </TD><TD>-------&gt;</TD><TD></TD></TR>
-     * <TR><TD>(4)</TD><TD> </TD><TD>&lt;-------</TD><TD>data</TD></TR>
+     * <TR><TD>(4)</TD><TD>  </TD><TD>&lt;-------</TD><TD>SIZE:<I>4096</I></TD></TR>
+     * <TR><TD>(5)</TD><TD> OK </TD><TD>-------&gt;</TD><TD></TD></TR>
+     * <TR><TD>(6)</TD><TD> </TD><TD>&lt;-------</TD><TD>data</TD></TR>
      * <TR><TD>...</TD><TD>...</TD><TD>...</TD><TD>...</TD></TR>
      * <TR><TD>(x)</TD><TD> CHUNK:<I>n</I> </TD><TD>-------&gt;</TD><TD></TD></TR>
-     * <TR><TD>(x+1)</TD><TD> </TD><TD>&lt;-------</TD><TD>data</TD></TR>
+     * <TR><TD>(x+1)</TD><TD>  </TD><TD>&lt;-------</TD><TD>SIZE:<I>xx</I></TD></TR>
+     * <TR><TD>(x+2)</TD><TD> OK </TD><TD>-------&gt;</TD><TD></TD></TR>
+     * <TR><TD>(x+3)</TD><TD> </TD><TD>&lt;-------</TD><TD>data</TD></TR>
      * <TR><TD>last</TD><TD> QUIT</TD><TD>-------&gt;</TD><TD></TD></TR>
      * </TABLE><BR>
      * <B>LIST</B><BR>
@@ -136,6 +153,20 @@ public class SyncClient {
      * Value for <I>type</I> is: <I>file</I> or <I>directory</I>.<BR>
      * Value for <I>size</I> is in bytes. If TYPE value is <I>directory</I>, then size is 0.<BR>
      * Value for <I>date</I> is in <I>dd-MM-yyyy</I> format.<BR>
+     * <BR>
+     * <B>CHECKSUM</B><BR>
+     * <BR>
+     * This command should return file checksum.
+     * If the file does not exist, 0 is returned.<BR>
+     * <BR>
+     * Table below shows exact protocol message exchange.<BR>
+     * <BR>
+     * <TABLE border=2>
+     * <TR><TH>id</TH><TH>client</TH><TH>description</TH><TH>server</TH></TR>
+     * <TR><TD>(1)</TD><TD> CHECKSUM:<I>myfile.zip</I></TD><TD>-------&gt;</TD><TD></TD></TR>
+     * <TR><TD>(2)</TD><TD> </TD><TD>&lt;-------</TD><TD><I>crc16 values ...</I></TD></TR> 
+     * </TABLE><BR>
+     * Last value in list of crc16 values is always 0 (last two bytes are 0x00, 0x00) to terminate list.
      * <BR>
      * <B>Example code</B><BR>
      * <BR>
@@ -199,7 +230,7 @@ public class SyncClient {
      */
     public void disconnect() throws IOException {                
                 
-        clientOut.write("QUIT".getBytes());
+        clientOut.write((markerStart + "QUIT" + markerEnd).getBytes());
         clientOut.flush();
         
         clientIn.close();
@@ -221,7 +252,6 @@ public class SyncClient {
      * (4) A chosen file is examined, chunk by chunk, calculating crc16 for each chunk.<BR>
      * (5) If a calculated crc16 value is different than crc16 value from the list, chunk is sent to server in order to update file.<BR>
      * (6) If a chunk is not in the list (case when a local file is bigger than copy on server), chunk is sent to server in order to append it to file.<BR>
-     * (7) At the end, <I>QUIT</I> message is sent to server to close session.<BR>
      * <BR>
      * <B>NOTE:</B><BR>
      * This is a blocking call. Please run it under a Thread if your application has to continue after this call.<BR>
@@ -246,7 +276,7 @@ public class SyncClient {
         int len = 0;
         int chunkNum = 0;        
                 
-        byte[] initData = ("FILE:" + fileName).getBytes();        
+        byte[] initData = (markerStart + "FILE:" + fileName + markerEnd).getBytes();        
         clientOut.write(initData);
         clientOut.flush();
         
@@ -279,15 +309,22 @@ public class SyncClient {
                     boolean chunkUpdated = false;
                     int retry = 0;
                     while(!chunkUpdated && retry < 5) {
-                        initData = ("CHUNK:" + chunkNum + "," + len).getBytes();
+                        initData = (markerStart + "CHUNK:" + chunkNum + "," + len + markerEnd).getBytes();
                         clientOut.write(initData);
                         clientOut.flush();
-                        byte[] okBuffer = new byte[2];
+                        
+                        byte[] okBuffer = new byte[markerStart.length() + "OK".length() + markerEnd.length()];
                         clientIn.read(okBuffer);
-                        if (okBuffer[0] == 79 && okBuffer[1] == 75) {
+                        String okReply = new String(okBuffer, 0, okBuffer.length);
+                                                
+                        if (okReply.equalsIgnoreCase(markerStart + "OK" + markerEnd)) {
                             clientOut.write(fileData);
                             clientOut.flush();
                         }
+                        else {
+                        	//wr("OK ack. not received properly from server side.");
+                        }
+                        
                         clientIn.read(crc16buffer);
                         int crc16return = ((crc16buffer[0] & 0xff) << 8) | (crc16buffer[1] & 0xff);
                         if (crc16value == crc16return) {
@@ -317,7 +354,6 @@ public class SyncClient {
      * (4) A chosen file is examined if it exists, chunk by chunk, calculating crc16 for each chunk.<BR>
      * (5) If a calculated crc16 value is different than crc16 value from the list, chunk request is sent to server in order to fetch it.<BR>
      * (6) A chunk sent by server should be written to output file at chunk position.<BR>
-     * (7) At the end, <I>QUIT</I> message is sent to server to close session.<BR>
      * <BR>
      * <B>NOTE:</B><BR>
      * This is a blocking call. Please run it under a Thread if your application has to continue after this call.<BR>
@@ -343,7 +379,7 @@ public class SyncClient {
         int len = 0;
         int chunkNum = 0;        
                 
-        clientOut.write(("GET:" + inputFile).getBytes());
+        clientOut.write((markerStart + "GET:" + inputFile + markerEnd).getBytes());
         clientOut.flush();
         
         byte[] crc16buffer = new byte[2];
@@ -375,18 +411,40 @@ public class SyncClient {
             
             if (fetchChunk) {
 
-                clientOut.write(("CHUNK:" + chunkNum).getBytes());
+            	int chunkSize;
+            	String sizeReply = "";
+            	
+                clientOut.write((markerStart + "CHUNK:" + chunkNum + markerEnd).getBytes());
                 clientOut.flush();
 
-                len = clientIn.read(fileData, 0, BUFFER_LEN);
-
+                while ( !(sizeReply.startsWith(markerStart) && sizeReply.endsWith(markerEnd)) ) {                
+                	len = clientIn.read(fileData, 0, BUFFER_LEN);                
+                	sizeReply = sizeReply + new String(fileData, 0, len);
+                }
+                
+                if ( sizeReply.startsWith(markerStart) && sizeReply.endsWith(markerEnd) ) {
+                    int beginIndex = markerStart.length();
+                    int endIndex = sizeReply.indexOf(markerEnd);                	
+                    sizeReply = sizeReply.substring(beginIndex, endIndex);
+                }
+                
+                chunkSize = Integer.parseInt(sizeReply.substring(sizeReply.indexOf(':') + 1));
+                
+                clientOut.write((markerStart + "OK" + markerEnd).getBytes());
+                clientOut.flush();
+                
+                len = 0;
+                while (len < chunkSize) {                
+                	len = len + clientIn.read(fileData, 0, chunkSize);
+                }
+                
                 if (len > 0) {
                     raf.seek(chunkNum * BUFFER_LEN);
                     raf.write(fileData, 0, len);
                 }
                 else {
-                    System.out.println("This is problem: a crc16 value for chunk " + chunkNum + " received," +
-                            " but no data available to read.");
+                    //wr("This is problem: a crc16 value for chunk " + chunkNum + " received," +
+                            //" but no data available to read.");
                 }
                 
             }
@@ -396,6 +454,92 @@ public class SyncClient {
         raf.setLength(raf.getFilePointer());
         raf.close();
 
+    }
+    
+    
+    /**
+     * File checksum.<BR>
+     * <BR>
+     * <B>Checksum overview</B><BR>
+     * <BR>
+     * (1) <I>CHECKSUM:</I> message is sent to server to fetch crc16 list for a chosen file.<BR>
+     * (2) A list with crc16 values is populated.<BR>
+     * (3) A sum of crc16 values is returned as total checksum.<BR>
+     * <BR>
+     * <B>NOTE:</B><BR>
+     * This is a blocking call. Please run it under a Thread if your application has to continue after this call.<BR>
+     * @param inputFile remote name of the file. If name contains paths, it will be truncated on server.<BR>
+     * @return checksum value 
+     * @throws IOException
+     */    
+    public int checksumRemote(String inputFile) throws IOException {
+                
+        int chunkCrc16 = 0;
+        
+        if (!connected) {
+            throw new IOException();
+        }        
+        
+        int len = 0;
+                
+        clientOut.write((markerStart + "CHECKSUM:" + inputFile + markerEnd).getBytes());
+        clientOut.flush();
+        
+        byte[] crc16buffer = new byte[2];
+        while( (len = clientIn.read(crc16buffer)) > 0) {       
+            int crc16value = ((crc16buffer[0] & 0xff) << 8) | (crc16buffer[1] & 0xff); 
+            if(crc16value != 0) {
+                chunkCrc16 = chunkCrc16 + crc16value;
+            }
+            else {
+                break;
+            }
+        }
+        
+        return chunkCrc16;
+    }
+    
+    /**
+     * File checksum.<BR>
+     * <BR>
+     * <B>Checksum of local file</B><BR>
+     * <BR>
+     * (1) File is divided into chunks.<BR>
+     * (2) Each chunk crc16 value is calculated.<BR>
+     * (3) A sum of crc16 values is returned as total checksum.<BR>
+     * <BR>
+     * @param inputFile local name of the file.<BR>
+     * @return checksum value, or 0 if file does not exist 
+     * @throws IOException
+     */    
+    public int checksumLocal(String inputFile) throws IOException {
+                
+        int chunkCrc16 = 0;
+        
+        Crc16 checksum = new Crc16();
+        
+        File file = new File(inputFile);
+        byte [] fileData = new byte[BUFFER_LEN];
+
+        if (file.exists()) {
+            RandomAccessFile raf = new RandomAccessFile(file, "r");
+
+            int len = 0;
+
+            while (len >= 0) {
+                len = raf.read(fileData, 0, BUFFER_LEN);
+
+                if (len > 0) {
+                    int crc16value = checksum.calculate(fileData, 0, len);
+                    chunkCrc16 = chunkCrc16 + crc16value;
+                }
+
+            }
+
+            raf.close();
+        }
+        
+        return chunkCrc16;
     }
     
     /**
@@ -408,7 +552,6 @@ public class SyncClient {
      * (3) A list is received.<BR>
      * (4) Files and folders are separated by colon (:).<BR>
      * (5) Folders in list have slash (/) ending in name, thus making them recognizable for further operations.<BR>
-     * (6) At the end, <I>QUIT</I> message is sent to server to close session.<BR>
      * <BR>
      * <B>NOTE:</B><BR>
      * This is a blocking call. Please run it under a Thread if your application has to continue after this call.<BR>
@@ -434,19 +577,20 @@ public class SyncClient {
             pattern = "*";
         }
         
-        byte[] initData = ("LIST:" + pattern).getBytes();        
+        byte[] initData = (markerStart + "LIST:" + pattern + markerEnd).getBytes();        
         clientOut.write(initData);
         clientOut.flush();
 
-
         int len;
+        
         while ((len = clientIn.read(fileList)) > 0) {                   
             String line = new String(fileList, 0, len);
             retVal = retVal + line;
-            String endMarker = "END"; 
-            if (line.endsWith(endMarker)) {
-                retVal = retVal.substring(0,
-                        retVal.length() - endMarker.length());
+            if (retVal.startsWith(markerStart) && retVal.endsWith(markerEnd)) {
+                int beginIndex = markerStart.length();
+                int endIndex = retVal.indexOf(markerEnd);
+
+                retVal = retVal.substring(beginIndex, endIndex);
                 break;
             }
         }
@@ -463,7 +607,6 @@ public class SyncClient {
      * (2) <I>INFO:</I> message is sent to server to fetch file or folder details.<BR>
      * (3) A string is received.<BR>
      * (4) String format is: TYPE:<I>type</I>,SIZE:<I>size</I>,DATE:<I>dd-MM-yyyy</I>.<BR>
-     * (5) At the end, <I>QUIT</I> message is sent to server to close session.<BR>
      * <BR>
      * <B>NOTE:</B><BR>
      * This is a blocking call. Please run it under a Thread if your application has to continue after this call.<BR>
@@ -490,13 +633,20 @@ public class SyncClient {
             return "";
         }
         
-        byte[] initData = ("INFO:" + file).getBytes();        
+        byte[] initData = (markerStart + "INFO:" + file + markerEnd).getBytes();        
         clientOut.write(initData);
         clientOut.flush();
 
         int len = clientIn.read(fileList);                   
         String line = new String(fileList, 0, len);
         retVal = retVal + line;
+        
+        if (retVal.startsWith(markerStart) && retVal.endsWith(markerEnd)) {
+            int beginIndex = markerStart.length();
+            int endIndex = retVal.indexOf(markerEnd);
+			
+            retVal = retVal.substring(beginIndex, endIndex);
+        }
                 
         return retVal;
     }

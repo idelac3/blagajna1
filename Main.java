@@ -10,8 +10,6 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
         
 /**
  *
@@ -20,12 +18,6 @@ import java.util.Date;
 public class Main {
     
     private static String rootDir = System.getProperty("user.dir");
-
-    static {
-        if (!rootDir.endsWith("/")) {
-            rootDir = rootDir + "/";
-        }
-    }
     
     /**
      * Ispis pomoci kod parametara za komandnu liniju.
@@ -39,31 +31,6 @@ public class Main {
         System.out.println("Folder za blagajnu: " + rootDir);
         System.out.println("");
         System.out.println("Autor: igor.delac@gmail.com");
-    }
-
-    /**
-     * Info o datoteci u prikladnom formatu za SyncClient potrebe.
-     * @param filename naziv i putanja do datoteke
-     * @return niz formata: TYPE:<I>type</I>,SIZE:<I>size</I>,DATE:<I>dd-MM-yyyy</I>
-     */
-    private static String fileInfo(String filename) {
-        String localInfo = "-";
-        File localFile = new File(filename);
-
-        if (localFile.exists()) {
-            if (localFile.isFile()) {
-                localInfo = "TYPE:file";
-                localInfo = localInfo + ",SIZE:" + String.valueOf(localFile.length());
-            } else if (localFile.isDirectory()) {
-                localInfo = "TYPE:directory";
-                localInfo = localInfo + ",SIZE=0";
-            }
-
-            localInfo = localInfo + ",DATE:"
-                    + new SimpleDateFormat("dd-MM-yyyy").format(new Date(localFile.lastModified()));
-        }
-
-        return localInfo;
     }
     
     /**
@@ -80,6 +47,15 @@ public class Main {
             help();
             return;
         }
+
+        if (o.isSwitch("-r")) {
+            rootDir = o.getSwitch("-r");
+        }
+        
+        if (!rootDir.endsWith("/")) {
+            rootDir = rootDir + "/";
+        }
+
         
         if (hostname.length() > 0) {
 
@@ -111,14 +87,11 @@ public class Main {
                         classFiles = cli.list(item);
                         for (String classFile : classFiles.split(":")) {
                             if (classFile.endsWith(".class")) {
-                                boolean updateClassFile = false;
                                 
-                                String remoteFileInfo = cli.info(item + classFile);
-                                String localFileInfo = fileInfo(rootDir + item + classFile);
-                                
-                                updateClassFile = !localFileInfo.equalsIgnoreCase(remoteFileInfo);
-                                
-                                if (updateClassFile) {
+                                int remoteChecksum = cli.checksumRemote(item + classFile);
+                                int localChecksum = cli.checksumLocal(rootDir + item + classFile);
+                                                                
+                                if (remoteChecksum != localChecksum) {
                                     System.out.println("Update: " + item + classFile);
                                     cli.get(item + classFile, rootDir + item + classFile);
                                     updatedCount++;
@@ -127,14 +100,10 @@ public class Main {
                         }
                     }
                     else if (item.endsWith(".class")) {
-                        boolean updateClassFile = false;
+                        int remoteChecksum = cli.checksumRemote(item);
+                        int localChecksum = cli.checksumLocal(rootDir + item);
 
-                        String remoteFileInfo = cli.info(item);
-                        String localFileInfo = fileInfo(rootDir + item);
-
-                        updateClassFile = !localFileInfo.equalsIgnoreCase(remoteFileInfo);
-
-                        if (updateClassFile) {
+                        if (remoteChecksum != localChecksum) {
                             System.out.println("Update: " + item);
                             cli.get(item, rootDir + item);
                             updatedCount++;
@@ -166,52 +135,52 @@ public class Main {
 
         }
         else {
-			/*
-			 * Set the Nimbus look and feel
-			 */
+            /*
+             * Set the Nimbus look and feel
+             */
 			// <editor-fold defaultstate="collapsed"
-			// desc=" Look and feel setting code (optional) ">
+            // desc=" Look and feel setting code (optional) ">
 			/*
-			 * If Nimbus (introduced in Java SE 6) is not available, stay with
-			 * the default look and feel. For details see
-			 * http://download.oracle.com/javase
-			 * /tutorial/uiswing/lookandfeel/plaf.html
-			 */
-			try {
-				// System.out.println("LookAndFeel:");
-				for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager
-						.getInstalledLookAndFeels()) {
-					// System.out.println(info.getName());
-					if ("Nimbus".equals(info.getName())) {
-						javax.swing.UIManager.setLookAndFeel(info
-								.getClassName());
-						break;
-					}
-				}
-			} catch (ClassNotFoundException ex) {
-				java.util.logging.Logger.getLogger(FrmBlagajna.class.getName())
-						.log(java.util.logging.Level.SEVERE, null, ex);
-			} catch (InstantiationException ex) {
-				java.util.logging.Logger.getLogger(FrmBlagajna.class.getName())
-						.log(java.util.logging.Level.SEVERE, null, ex);
-			} catch (IllegalAccessException ex) {
-				java.util.logging.Logger.getLogger(FrmBlagajna.class.getName())
-						.log(java.util.logging.Level.SEVERE, null, ex);
-			} catch (javax.swing.UnsupportedLookAndFeelException ex) {
-				java.util.logging.Logger.getLogger(FrmBlagajna.class.getName())
-						.log(java.util.logging.Level.SEVERE, null, ex);
-			}
+             * If Nimbus (introduced in Java SE 6) is not available, stay with
+             * the default look and feel. For details see
+             * http://download.oracle.com/javase
+             * /tutorial/uiswing/lookandfeel/plaf.html
+             */
+            try {
+                // System.out.println("LookAndFeel:");
+                for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager
+                        .getInstalledLookAndFeels()) {
+                    // System.out.println(info.getName());
+                    if ("Nimbus".equals(info.getName())) {
+                        javax.swing.UIManager.setLookAndFeel(info
+                                .getClassName());
+                        break;
+                    }
+                }
+            } catch (ClassNotFoundException ex) {
+                java.util.logging.Logger.getLogger(FrmBlagajna.class.getName())
+                        .log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                java.util.logging.Logger.getLogger(FrmBlagajna.class.getName())
+                        .log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                java.util.logging.Logger.getLogger(FrmBlagajna.class.getName())
+                        .log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+                java.util.logging.Logger.getLogger(FrmBlagajna.class.getName())
+                        .log(java.util.logging.Level.SEVERE, null, ex);
+            }
 			// </editor-fold>
 
-			/*
-			 * Create and display the form
-			 */
-			java.awt.EventQueue.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					new FrmBlagajna().setVisible(true);
-				}
-			});
+            /*
+             * Create and display the form
+             */
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    new FrmBlagajna().setVisible(true);
+                }
+            });
         }
     }
 }
