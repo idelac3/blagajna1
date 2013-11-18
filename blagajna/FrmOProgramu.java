@@ -163,7 +163,7 @@ public class FrmOProgramu extends javax.swing.JFrame {
         /**
          * Verzija programa.
          */
-        ver = "1.10";
+        ver = "1.11";
 
         try {
 

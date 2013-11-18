@@ -2220,7 +2220,7 @@ public class FrmPostavke extends javax.swing.JFrame {
                 brRac + "/" + poslovnica + "/" + blagajna, duzinaLinije)
                 + "\n" + formatLine("Blagajnik:", "Test", duzinaLinije)
                 + "\n" + formatLine("Placanje:", naplata, duzinaLinije)
-                + formatLine(oznakaProizvoda, "IZNOS", duzinaLinije) + "\n"
+                + formatLine(txtProizvodOznaka.getText(), "IZNOS", duzinaLinije) + "\n"
                 + separator
                 + "\n" + text
                 + separator + "\n"

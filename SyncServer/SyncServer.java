@@ -480,7 +480,7 @@ public class SyncServer implements Runnable {
                 	String item = serverCmd.substring("CHECKSUM:".length());
                     wr("Checksum = " + item);
                     
-                    File file = new File(item);
+                    File file = new File(this.rootDir + item);
                     chunkCrc16.clear();
                     
                     if (file.exists()) {
