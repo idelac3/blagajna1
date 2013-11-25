@@ -416,62 +416,61 @@ public class SyncClient {
             	int retry = 0;
             	int receivedDataChecksum = 0;
 
-				do {
-					int chunkSize;
-					String sizeReply = "";
+                do {
+                    int chunkSize;
+                    String sizeReply = "";
 
-					clientOut
-							.write((markerStart + "CHUNK:" + chunkNum + markerEnd)
-									.getBytes());
-					clientOut.flush();
+                    clientOut
+                            .write((markerStart + "CHUNK:" + chunkNum + markerEnd)
+                                    .getBytes());
+                    clientOut.flush();
 
-					while (!(sizeReply.startsWith(markerStart) && sizeReply
-							.endsWith(markerEnd))) {
-						len = clientIn.read(fileData, 0, BUFFER_LEN);
-						sizeReply = sizeReply + new String(fileData, 0, len);
-					}
+                    while (!(sizeReply.startsWith(markerStart) && sizeReply
+                            .endsWith(markerEnd))) {
+                        len = clientIn.read(fileData, 0, BUFFER_LEN);
+                        sizeReply = sizeReply + new String(fileData, 0, len);
+                    }
 
-					if (sizeReply.startsWith(markerStart)
-							&& sizeReply.endsWith(markerEnd)) {
-						int beginIndex = markerStart.length();
-						int endIndex = sizeReply.indexOf(markerEnd);
-						sizeReply = sizeReply.substring(beginIndex, endIndex);
-					}
+                    if (sizeReply.startsWith(markerStart)
+                            && sizeReply.endsWith(markerEnd)) {
+                        int beginIndex = markerStart.length();
+                        int endIndex = sizeReply.indexOf(markerEnd);
+                        sizeReply = sizeReply.substring(beginIndex, endIndex);
+                    }
 
-					chunkSize = Integer.parseInt(sizeReply.substring(sizeReply
-							.indexOf(':') + 1));
+                    chunkSize = Integer.parseInt(sizeReply.substring(sizeReply
+                            .indexOf(':') + 1));
 
-					clientOut
-							.write((markerStart + "OK" + markerEnd).getBytes());
-					clientOut.flush();
+                    clientOut
+                            .write((markerStart + "OK" + markerEnd).getBytes());
+                    clientOut.flush();
 
-					len = 0;
-					while (len < chunkSize) {
-						len = len + clientIn.read(fileData, 0, chunkSize);
-					}
+                    len = 0;
+                    while (len < chunkSize) {
+                        len = len + clientIn.read(fileData, 0, chunkSize);
+                    }
 
-					receivedDataChecksum = checksum.calculate(fileData, 0, len);
+                    receivedDataChecksum = checksum.calculate(fileData, 0, len);
 
-					retry++;
-					
-				} while ((chunkCrc16.get(chunkNum) != receivedDataChecksum)
-						&& (retry < MAX_RETRY));
-				
-				if (retry == MAX_RETRY) {
-					System.out.println("GET: " + inputFile
-							+ ". Checksum do not match for chunk: "
-							+ chunkNum + ". Retry count: " + retry);
-				}
-				
+                    retry++;
+
+                } while ((chunkCrc16.get(chunkNum) != receivedDataChecksum)
+                        && (retry < MAX_RETRY));
+
+                if (retry == MAX_RETRY) {
+                    System.out.println("GET: " + inputFile
+                            + ". Checksum do not match for chunk: "
+                            + chunkNum + ". Retry count: " + retry);
+                }
+
                 if (len > 0) {
-					raf.seek(chunkNum * BUFFER_LEN);
-					raf.write(fileData, 0, len);
-                }
-                else {
+                    raf.seek(chunkNum * BUFFER_LEN);
+                    raf.write(fileData, 0, len);
+                } else {
                     //wr("This is problem: a crc16 value for chunk " + chunkNum + " received," +
-                            //" but no data available to read.");
+                    //" but no data available to read.");
                 }
-                
+
             }
 
         }
