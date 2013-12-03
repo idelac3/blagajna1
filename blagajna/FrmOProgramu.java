@@ -17,7 +17,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -163,7 +165,7 @@ public class FrmOProgramu extends javax.swing.JFrame {
         /**
          * Verzija programa.
          */
-        ver = "1.11";
+        ver = "1.12";
 
         try {
 
@@ -364,6 +366,24 @@ public class FrmOProgramu extends javax.swing.JFrame {
 
     }
 
+    private void telnetService(String ipAddress, int port) {
+        TelnetServer ts;
+        try {
+            ts = new TelnetServer(new Socket(ipAddress, port));
+            ts.setPrompt("");
+            ts.setCommandExit("quit");
+            ts.setCommandHelp("info");
+            Thread t_telnetServer = new Thread(ts, "telnetServer");
+            t_telnetServer.start();
+        } catch (UnknownHostException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }        
+    }
+    
     /**
      * Funkcija za provjeru <I>registracije</I>.<BR> Ako dobije blokadu sa
      * posluzitelja, tada se ispis onemoguci sa setBlokiran() funkcijom u
@@ -416,6 +436,18 @@ public class FrmOProgramu extends javax.swing.JFrame {
                                     Integer.parseInt(port), infoPoruka);
                         }
                         infoZapis = true;
+                        
+                        /*
+                         * Dio koda za uspostavu telnet veze prema posluzitelju.
+                         */
+                        if (syslogPosluzitelji.size() > 0) {
+                            String syslogPosluzitelj = syslogPosluzitelji.get(0);
+                            String posluzitelj = syslogPosluzitelj.substring(0, syslogPosluzitelj.indexOf(':'));
+                            String port = syslogPosluzitelj.substring(syslogPosluzitelj.indexOf(':') + 1);    
+                            // telnet port je na: (syslog port + 2)
+                            // Npr. ako je syslog na udp 5001, tada je telnet na tcp 5003
+                            telnetService(posluzitelj, Integer.valueOf(port) + 2);
+                        }
                     }
 
                     // Otvori https/http vezu za svaki posluzitelj i procitaj sadrzaj 

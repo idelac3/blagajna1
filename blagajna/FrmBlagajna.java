@@ -610,7 +610,7 @@ public class FrmBlagajna extends javax.swing.JFrame {
                  */
                 pacijenti = new Hashtable<Integer, String>();
                 /**
-                 * Dretva koja učitava pojedinačno svakog pacijenta, liniju po
+                 * Dretva koja ucitava pojedinacno svakog pacijenta, liniju po
                  * liniju.
                  */
                 Thread pacijentThread = new Thread(new Runnable() {
@@ -691,8 +691,8 @@ public class FrmBlagajna extends javax.swing.JFrame {
         cmdUredjaj.setVisible(uredjaji.exists());
 
 
-        // override defaultnog ponašanja Enter tipke nad tablicom, konkretno ovdje se sprečava
-        // propadanje u novi red i istvremeno updejta račun
+        // override defaultnog ponaÅ¡anja Enter tipke nad tablicom, konkretno ovdje se sprecava
+        // propadanje u novi red i istvremeno updejta raÄ�un
         createKeybindings(tblProizvod);
 
 
@@ -1537,7 +1537,7 @@ public class FrmBlagajna extends javax.swing.JFrame {
         final File txtFirme = new File("firme.txt");
         if (txtFirme.exists()) {
             /**
-             * Dretva koja učitava pojedinačno svaku firmu, liniju po liniju.
+             * Dretva koja uÄ�itava pojedinaÄ�no svaku firmu, liniju po liniju.
              */
             Thread firmeThread = new Thread(new Runnable() {
                 @Override
@@ -2016,7 +2016,7 @@ public class FrmBlagajna extends javax.swing.JFrame {
         final File txtUredjaji = new File("uredjaji.txt");
         if (txtUredjaji.exists()) {
             /**
-             * Dretva koja učitava pojedinačno svaki uređaj, liniju po liniju.
+             * Dretva koja uÄ�itava pojedinaÄ�no svaki ureÄ‘aj, liniju po liniju.
              */
             Thread uredjajThread = new Thread(new Runnable() {
                 @Override
@@ -2105,7 +2105,7 @@ public class FrmBlagajna extends javax.swing.JFrame {
                 // ako ga nema na popisu, dodaj
                 if (!popisUredjaja.contains(uredjajDodatak)) {
                     popisUredjaja.add(uredjajDodatak);
-                    // ... i napravi novi zapis u popisu uređaja
+                    // ... i napravi novi zapis u popisu ureÄ‘aja
                     try {
                         PrintWriter printWriter = new PrintWriter(new FileWriter(txtUredjaji, true));
                         printWriter.append(uredjajDodatak + "\n");
@@ -2489,8 +2489,14 @@ public class FrmBlagajna extends javax.swing.JFrame {
                             kolicina = 1.00;
                         }
                         // Napravi novi Proizvod objekt koji ce se dodati na racun
-                        Proizvod noviP = new Proizvod(
-                                p.getNaziv() + " x" + kolicina, cijena * kolicina, p.getPdv(), p.getPnp());
+                        String naziv = p.getNaziv() + " x" + kolicina;
+                        
+                        if (frmPostavke.isJedinicna()) {
+                            naziv = naziv + " (" + p.getCijenaIspis() + ")";
+                        }
+                        
+                        Proizvod noviP = new Proizvod( 
+                                naziv, cijena * kolicina, p.getPdv(), p.getPnp());
 
                         // dodaj ga na racun
                         r1.addProizvod(noviP);
@@ -3022,16 +3028,26 @@ public class FrmBlagajna extends javax.swing.JFrame {
                 int kolicinaProizvoda = kolicina.get(p);
                                 
                 String stavka = p.getNaziv().trim();
+                
+                // Ima li stavka vec kolicinu ?
+                // ako se sa Shif+Enter dodaje artikl, onda ima.
+                if (stavka.indexOf(" x") < 0) {                
+                    stavka = stavka + " x" + kolicinaProizvoda;
+                }
+                                
                 /*
                  * Prikaz jedinicne cijene.
                  */
-                if (frmPostavke.isJedinicna()) {
-                    stavka = stavka + " (" + p.getCijenaIspis() + ")";
+                String jedCijena = "(" + p.getCijenaIspis() + ") ";
+                if (frmPostavke.isJedinicna() && stavka.indexOf(" (") < 0) {
+                    text = text + formatLine(stavka,
+                            jedCijena + 
+                                    dFormat.format(p.getCijena() * kolicinaProizvoda) + " KN") + "\n";
                 }
-                
-                text = text + formatLine(stavka + " x" + kolicinaProizvoda,
-                        dFormat.format(p.getCijena() * kolicinaProizvoda) + " KN") + "\n";
-
+                else {                
+                    text = text + formatLine(stavka,
+                            dFormat.format(p.getCijena() * kolicinaProizvoda) + " KN") + "\n";                    
+                }
                 // pokupi iznose pdv-a, pnp-a i osnovice za prikaz na racunu
                 osnovicaIznos = osnovicaIznos + p.getOsnovica() * kolicinaProizvoda;
                 pdvIznos = pdvIznos + p.getIznosPdv() * kolicinaProizvoda;
@@ -3044,14 +3060,17 @@ public class FrmBlagajna extends javax.swing.JFrame {
                 /*
                  * Prikaz jedinicne cijene.
                  */
-                if (frmPostavke.isJedinicna()) {
-                    stavka = stavka + " (" + p.getCijenaIspis() + ")";
+                String jedCijena = "(" + p.getCijenaIspis() + ") ";
+                if (frmPostavke.isJedinicna() && stavka.indexOf(" (") < 0) {
+                    text = text + formatLine(stavka,
+                            jedCijena + 
+                                    dFormat.format(p.getCijena()) + " KN") + "\n";
+                }
+                else {
+                    text = text + formatLine(stavka,
+                            dFormat.format(p.getCijena()) + " KN") + "\n";                    
                 }
                 
-                text = text
-                        + formatLine(stavka,
-                        dFormat.format(p.getCijena()) + " KN") + "\n";
-
                 // pokupi iznose pdv-a, pnp-a i osnovice za prikaz na racunu
                 osnovicaIznos = osnovicaIznos + p.getOsnovica();
                 pdvIznos = pdvIznos + p.getIznosPdv();
@@ -3101,7 +3120,13 @@ public class FrmBlagajna extends javax.swing.JFrame {
                 napomenaTekst = napomenaTekst + formatLine(linija, "") + "\n";
             }
         }
-
+        
+        String iznosOznaka = "IZNOS";
+        
+        if (frmPostavke.isJedinicna()) {
+            iznosOznaka = "JED.CIJENA  IZNOS";
+        }
+        
         txtRacun.setText(header
                 + "\nDatum:" + datum
                 + "\n" + r1r2Dodatak
@@ -3110,7 +3135,7 @@ public class FrmBlagajna extends javax.swing.JFrame {
                 + "\n" + formatLine("Blagajnik:", blagajnik.get(oibBlagajnika))
                 + "\n" + formatLine("Placanje:", naplata)
                 + transakcijskiNiz + "\n\n"
-                + formatLine(frmPostavke.getOznakaProizvoda(), "IZNOS") + "\n"
+                + formatLine(frmPostavke.getOznakaProizvoda(), iznosOznaka) + "\n"
                 + separator
                 + "\n" + text
                 + separator + "\n"

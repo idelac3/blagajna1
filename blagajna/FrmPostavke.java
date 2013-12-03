@@ -2173,14 +2173,24 @@ public class FrmPostavke extends javax.swing.JFrame {
             for (Proizvod p : kolicina.keySet()) {
                 int kolicinaProizvoda = kolicina.get(p);
                 String stavka = p.getNaziv().trim();
+                
+                if (stavka.indexOf(" x") < 0) {                
+                    stavka = stavka + " x" + kolicinaProizvoda;
+                }
+                
                 /*
                  * Prikaz jedinicne cijene.
                  */
-                if (chkJedinicnaCijena.isSelected()) {
-                    stavka = stavka + " (" + p.getCijenaIspis() + ")";
+                String jedCijena = "(" + p.getCijenaIspis() + ") ";
+                if (chkJedinicnaCijena.isSelected() && stavka.indexOf(" (") < 0) {                                        
+                    text = text + formatLine(stavka,
+                            jedCijena + 
+                                    dFormat.format(p.getCijena() * kolicinaProizvoda) + " KN", duzinaLinije) + "\n";
                 }
-                text = text + formatLine(stavka + " x" + kolicinaProizvoda,
-                        dFormat.format(p.getCijena() * kolicinaProizvoda) + " KN", duzinaLinije) + "\n";
+                else {
+                    text = text + formatLine(stavka,
+                            dFormat.format(p.getCijena() * kolicinaProizvoda) + " KN", duzinaLinije) + "\n";                    
+                }
 
                 // pokupi iznose pdv-a, pnp-a i osnovice za prikaz na racunu
                 osnovicaIznos = osnovicaIznos + p.getOsnovica() * kolicinaProizvoda;
@@ -2194,13 +2204,16 @@ public class FrmPostavke extends javax.swing.JFrame {
                 /*
                  * Prikaz jedinicne cijene.
                  */
-                if (chkJedinicnaCijena.isSelected()) {
-                    stavka = stavka + " (" + p.getCijenaIspis() + ")";
+                String jedCijena = "(" + p.getCijenaIspis() + ") ";
+                if (chkJedinicnaCijena.isSelected() && stavka.indexOf(" (") < 0) {
+                    text = text + formatLine(stavka,
+                            jedCijena + 
+                                    dFormat.format(p.getCijena()) + " KN", duzinaLinije) + "\n";
                 }
-                text = text
-                        + formatLine(stavka,
-                        dFormat.format(p.getCijena()) + " KN", duzinaLinije) + "\n";
-
+                else {
+                    text = text + formatLine(stavka,
+                            dFormat.format(p.getCijena()) + " KN", duzinaLinije) + "\n";                    
+                }
                 // pokupi iznose pdv-a, pnp-a i osnovice za prikaz na racunu
                 osnovicaIznos = osnovicaIznos + p.getOsnovica();
                 pdvIznos = pdvIznos + p.getIznosPdv();
@@ -2214,13 +2227,19 @@ public class FrmPostavke extends javax.swing.JFrame {
             pnpFormatLine = formatLine("PNP: ", dFormat.format(pnpIznos) + " KN", duzinaLinije);
         }
 
+        String iznosOznaka = "IZNOS";
+        
+        if (chkJedinicnaCijena.isSelected()) {
+            iznosOznaka = "JED.CIJENA  IZNOS";
+        }
+                        
         String racun = frmBlagajna.getHeader()                
                 + "\nDatum:" + datum
                 + "\n" + formatLine("Br.racuna: ",
                 brRac + "/" + poslovnica + "/" + blagajna, duzinaLinije)
                 + "\n" + formatLine("Blagajnik:", "Test", duzinaLinije)
                 + "\n" + formatLine("Placanje:", naplata, duzinaLinije)
-                + formatLine(txtProizvodOznaka.getText(), "IZNOS", duzinaLinije) + "\n"
+                + formatLine(txtProizvodOznaka.getText(), iznosOznaka, duzinaLinije) + "\n"
                 + separator
                 + "\n" + text
                 + separator + "\n"
