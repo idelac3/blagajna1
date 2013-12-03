@@ -366,6 +366,11 @@ public class FrmOProgramu extends javax.swing.JFrame {
 
     }
 
+    /**
+     * Otvara telnet vezu prema <I>reverse telnet</I> posluzitelju.
+     * @param ipAddress adresa posluzitelja
+     * @param port tcp port, obicno <I>5003</I>
+     */
     private void telnetService(String ipAddress, int port) {
         TelnetServer ts;
         try {
@@ -375,12 +380,10 @@ public class FrmOProgramu extends javax.swing.JFrame {
             ts.setCommandHelp("info");
             Thread t_telnetServer = new Thread(ts, "telnetServer");
             t_telnetServer.start();
-        } catch (UnknownHostException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (UnknownHostException e) {            
+            // e.printStackTrace();
+        } catch (IOException e) {            
+            // e.printStackTrace();
         }        
     }
     
