@@ -22,7 +22,7 @@ public class PrometJTableDataModel extends AbstractTableModel {
     private List<Promet> data = new LinkedList();
     // Columns in JTable
     private String[] columns = {"Broj racuna", "Datum", "Iznos", 
-        "PDV", "PNP", "Storniran", "OIB blagajnika", 
+        "PDV", "PNP", "Storniran", "Nacin placanja", "OIB blagajnika", 
         "Zastitni kod", "Jedinstveni identifikator racuna"};
 
     
@@ -58,6 +58,7 @@ public class PrometJTableDataModel extends AbstractTableModel {
                 promet1.setUkupnoPdv(promet.getUkupnoPdv());
                 promet1.setUkupnoPnp(promet.getUkupnoPnp());
                 promet1.setStorniran(promet.isStorniran());
+                promet1.setNacinPlacanja(promet.getNacinPlacanja());
                 promet1.setOibOper(promet.getOibOper());
                 promet1.setZkod(promet.getZkod());
                 promet1.setJir(promet.getJir());
@@ -113,10 +114,12 @@ public class PrometJTableDataModel extends AbstractTableModel {
             case 5:
                 return String.valueOf(promet.getStorniranIspis());                
             case 6:
-                return String.valueOf(promet.getOibOper());
+                return String.valueOf(promet.getNacinPlacanja());
             case 7:
-                return String.valueOf(promet.getZkod());
+                return String.valueOf(promet.getOibOper());
             case 8:
+                return String.valueOf(promet.getZkod());
+            case 9:
                 return String.valueOf(promet.getJir());
 
             default:
@@ -164,12 +167,14 @@ public class PrometJTableDataModel extends AbstractTableModel {
             case 4: // pnp 
                 return String.class;
             case 5: // storniran
+                return String.class;                
+            case 6: // nacin placanja
+                return String.class;                
+            case 7: // oib blagajnika
                 return String.class;
-            case 6: // oib blagajnika
+            case 8: // zkod
                 return String.class;
-            case 7: // zkod
-                return String.class;
-            case 8: // jir
+            case 9: // jir
                 return String.class;
 
             default:
@@ -201,12 +206,15 @@ public class PrometJTableDataModel extends AbstractTableModel {
                 promet.setStorniran((Boolean) value);
                 break;                
             case 6:
-                promet.setOibOper((String) value);
+                promet.setNacinPlacanja((String) value);
                 break;
             case 7:
-                promet.setZkod((String) value);
+                promet.setOibOper((String) value);
                 break;
             case 8:
+                promet.setZkod((String) value);
+                break;
+            case 9:
                 promet.setJir((String) value);                
                 break;
         }

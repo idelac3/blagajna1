@@ -21,6 +21,7 @@ public class Promet {
     private double ukupnoPdv;
     private double ukupnoPnp;
     private boolean storniran;
+    private String nacinPlacanja;
     private String oibOper;
     private String zkod;
     private String jir;
@@ -34,19 +35,21 @@ public class Promet {
      * @param ukupnoPdv ukupno pdv-a
      * @param ukupnoPnp ukupno pnp-a
      * @param storniran da li je storniran
+     * @param nacinPlacanja kako je raun placen
      * @param oibOper oib blagajnika
      * @param zkod zastiti kod
      * @param jir jedinstveni identifikator racuna
      */
     public Promet(int brRac, Date datum, double iznosUkupno,
             double ukupnoPdv, double ukupnoPnp, boolean storniran,
-            String oibOper, String zkod, String jir) {
+            String nacinPlacanja, String oibOper, String zkod, String jir) {
         this.brRac = brRac;
         this.datum = datum;
         this.iznosUkupno = iznosUkupno;
         this.ukupnoPdv = ukupnoPdv;
         this.ukupnoPnp = ukupnoPnp;
         this.storniran = storniran;
+        this.nacinPlacanja = nacinPlacanja;
         this.zkod = zkod;
         this.jir = jir;
         this.oibOper = oibOper;
@@ -211,6 +214,24 @@ public class Promet {
      */
     public void setStorniran(boolean storniran) {
         this.storniran = storniran;
+    }
+
+    /**
+     * Nacin placanja
+     *
+     * @return kako je racun placen
+     */
+    public String getNacinPlacanja() {
+        return nacinPlacanja;
+    }
+
+    /**
+     * Nacin placanja
+     *
+     * @param postavi nacin placanja racuna
+     */
+    public void setNacinPlacanja(String nacinPlacanja) {
+        this.nacinPlacanja = nacinPlacanja;
     }
 
     /**

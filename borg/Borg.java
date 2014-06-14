@@ -41,9 +41,10 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
-
+/*
 import com.easynth.lookandfeel.EaSynthLookAndFeel;
 import com.seaglasslookandfeel.SeaGlassLookAndFeel;
+*/
 
 /**
  * <H1>Borg</H1><BR>
@@ -616,11 +617,13 @@ public class Borg extends JFrame {
 		 * or this one:
 		 * -Dswing.defaultlaf=com.easynth.lookandfeel.EaSynthLookAndFeel
 		 */
+		/*
 		final EaSynthLookAndFeel easynthLAF = new EaSynthLookAndFeel();		
 		final SeaGlassLookAndFeel seaglassLAF = new SeaGlassLookAndFeel();
 		
 		UIManager.installLookAndFeel(easynthLAF.getName(), easynthLAF.getClass().getName());
 		UIManager.installLookAndFeel(seaglassLAF.getName(), seaglassLAF.getClass().getName());
+		*/
 		
 		/*
 		 *  Make main window visible.
@@ -706,7 +709,8 @@ public class Borg extends JFrame {
 		                udpListener.receive(receivePacket);
 		                
 		                // Extract datagram content.
-		                String sentence = new String(receivePacket.getData());
+		                String sentence = new String(receivePacket.getData(),
+		                		0, receivePacket.getLength());
 
 		                /*
 		                 * Process message.

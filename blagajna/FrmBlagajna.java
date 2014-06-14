@@ -2638,7 +2638,7 @@ public class FrmBlagajna extends javax.swing.JFrame {
                             if (sada.substring(3).equalsIgnoreCase(prometDatum.substring(3))) {
                                 frmPromet.addPromet(brRac, new Date(), x1.getIznosUkupno(),
                                         x1.getUkupnoPdv(), x1.getUkupnoPnp(), false,
-                                        x1.getOibOper(), zkod, jir);
+                                        x1.getNacinPlacanja(), x1.getOibOper(), zkod, jir);
                             }
                         } else {
                             // ako prozor Promet prikazuje danasnji promet
@@ -2646,7 +2646,7 @@ public class FrmBlagajna extends javax.swing.JFrame {
                             if (sada.equalsIgnoreCase(prometDatum)) {
                                 frmPromet.addPromet(brRac, new Date(), x1.getIznosUkupno(),
                                         x1.getUkupnoPdv(), x1.getUkupnoPnp(), false,
-                                        x1.getOibOper(), zkod, jir);
+                                        x1.getNacinPlacanja(), x1.getOibOper(), zkod, jir);
                             }
                         }
                     }

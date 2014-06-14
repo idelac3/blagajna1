@@ -198,13 +198,13 @@ public class FrmPromet extends javax.swing.JFrame {
      * @param zkod zastitni kod
      * @param jir jedinstveni identifikator racuna
      */
-    public void addPromet(int brRac, Date datVrijeme, double iznosUkupno, double pdv, double pnp, boolean storno, String oibOper, String zkod, String jir) {
+    public void addPromet(int brRac, Date datVrijeme, double iznosUkupno, double pdv, double pnp, boolean storno, String nacinPlacanja, String oibOper, String zkod, String jir) {
 
         // da glavni prozor FrmBlagajna moze dodati izdani racun
         //  bez da se sa loadPromet sve ponovno ucitava
         tableModel.addPromet(
                 new Promet(brRac, datVrijeme, iznosUkupno,
-                pdv, pnp, storno, oibOper, zkod, jir));
+                pdv, pnp, storno, nacinPlacanja, oibOper, zkod, jir));
 
     }
 
@@ -333,7 +333,7 @@ public class FrmPromet extends javax.swing.JFrame {
                         tableModel.addPromet(
                                 new Promet(x1.getBrRac(), x1.getDatVrijeme(), x1.getIznosUkupno(),
                                 x1.getUkupnoPdv(), x1.getUkupnoPnp(), storniran,
-                                x1.getOibOper(), x1.getZastitniKod(), jir));
+                                x1.getNacinPlacanja(), x1.getOibOper(), x1.getZastitniKod(), jir));
 
                         // postavi progres
                         progresBar.setValue(i);
@@ -1074,6 +1074,7 @@ public class FrmPromet extends javax.swing.JFrame {
                             + "\"" + dFormat.format(p.getUkupnoPdv()) + "\";"
                             + "\"" + dFormat.format(p.getUkupnoPnp()) + "\";"
                             + p.getStorniranIspis() + ";"
+                            + p.getNacinPlacanja() + ";"
                             + p.getOibOper() + ";"
                             + p.getZkod() + ";"
                             + p.getJir() + ";");
@@ -1660,7 +1661,7 @@ public class FrmPromet extends javax.swing.JFrame {
                             tableModel.addPromet(
                                     new Promet(x1.getBrRac(), x1.getDatVrijeme(), x1.getIznosUkupno(),
                                     x1.getUkupnoPdv(), x1.getUkupnoPnp(), storniran,
-                                    x1.getOibOper(), x1.getZastitniKod(), jir));
+                                    x1.getNacinPlacanja(), x1.getOibOper(), x1.getZastitniKod(), jir));
 
                             // postavi progres
                             progresBar.setValue(i);
