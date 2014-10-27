@@ -1059,12 +1059,33 @@ public class FrmPromet extends javax.swing.JFrame {
                 File file = new File(filename);
                 pw = new PrintWriter(file);
 
+                // zaglavlje
+                /*
+                pw.println(";" + postavke.getNaziv());
+                pw.println(";vl. " + postavke.getVlasnik());
+                pw.println(";OIB: " + postavke.getOib());
+                pw.println(";POSLOVNICA: " + postavke.getPoslovnica());
+                */
+                for (String linija : blagajna.getHeader().split("\r?\n")) {
+                    pw.println(";" + linija);
+                }
+                pw.println(";");
+                pw.println(";");
+                
                 // ispis naslovnih polja
                 for (int i = 0; i < tableModel.getColumnCount(); i++) {
                     pw.print(tableModel.getColumnName(i) + ";");
                 }
                 pw.println();
 
+                // Ukupno stornirano, gotovinom, karticama, transakcijski.
+                double stornirano = 0.00;
+                double ukupno = 0.00;
+                double gotovina = 0.00;
+                double kartice = 0.00;
+                double transakcije = 0.00;
+                double ostalo = 0.00;
+                
                 // ispis tablice u datoteku
                 for (Promet p : tableModel.getData()) {
                     // ispis svake stavke
@@ -1078,7 +1099,40 @@ public class FrmPromet extends javax.swing.JFrame {
                             + p.getOibOper() + ";"
                             + p.getZkod() + ";"
                             + p.getJir() + ";");
+                    
+                    if (p.isStorniran()) {
+                        stornirano = stornirano + p.getIznosUkupno();
+                    }
+                    else {
+                        ukupno = ukupno + p.getIznosUkupno();
+                        
+                        if (p.getNacinPlacanja().equalsIgnoreCase("G")) {
+                            gotovina = gotovina + p.getIznosUkupno();
+                        }
+                        else if (p.getNacinPlacanja().equalsIgnoreCase("T")) {
+                            transakcije = transakcije + p.getIznosUkupno();
+                        }
+                        else if (p.getNacinPlacanja().equalsIgnoreCase("K")) {
+                            kartice = kartice + p.getIznosUkupno();
+                        }
+                        else {
+                            ostalo = ostalo + p.getIznosUkupno();
+                        }
+                    }
                 }
+
+
+                pw.println(";");
+                pw.println(";");
+
+                pw.println(";STORNIRANO;" + dFormat.format(stornirano));
+                pw.println(";IZDANO;");
+                pw.println(";GOTOVINA;" + dFormat.format(gotovina));
+                pw.println(";KARTICE;" + dFormat.format(kartice));
+                pw.println(";TRANSAKCIJE;" + dFormat.format(transakcije));
+                pw.println(";OSTALO;" + dFormat.format(ostalo));
+                pw.println(";UKUPNO;" + dFormat.format(ukupno));
+                
                 pw.close();
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "cmdSpremiCsv()", ex);
