@@ -21,6 +21,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -244,6 +245,12 @@ public class FrmBlagajna extends javax.swing.JFrame {
     public Locale lokalizacija;
 
     /**
+     * Serverski soket koji se otvori samo radi provjere da nije slucajno 
+     * program jos jedanput pokrenut.
+     */
+    public ServerSocket serverSocket;
+            
+    /**
      * Glavni prozor, prikaz i pocetak programa
      */
     public FrmBlagajna() {
@@ -298,6 +305,14 @@ public class FrmBlagajna extends javax.swing.JFrame {
             //  uvijek budu formatirani sa tockom a ne zarezom                        
             Locale.setDefault(new Locale("en", "US"));
             sLog = sLog + ("\nPostavljam lokalizac.: " + Locale.getDefault());
+
+            try {
+                int portNumber = 4001;
+                serverSocket = new ServerSocket(portNumber);
+            } catch (IOException e) {
+                System.out.println("Blagajna vec pokrenuta ili neki drugi program je otvorio tcp port 4001.");
+                System.exit(0);
+            }
 
             // napravi prozor PoslovniProstor ako ne postoji
             if (this.frmPostavke == null) {
@@ -2226,13 +2241,18 @@ public class FrmBlagajna extends javax.swing.JFrame {
 
         // spremi postavke, najvise zbog broja racuna da se spremi
         frmPostavke.postavkeSave("postavke.txt");
-
+        try {
+            // Zatvori port.            
+            serverSocket.close();
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        
         // kraj programa
         this.setVisible(false);
         System.exit(1);
 
-    }// GEN-LAST:event_cmdIzlazActionPerformed
-
+    }
     /**
      * Procedura za dodavanj stavke na racun (Enter) ili uklanjanja (Del)
      *
@@ -2978,6 +2998,20 @@ public class FrmBlagajna extends javax.swing.JFrame {
     }
 
     /**
+     * Funkcija koja ce stvoriti prazan niz znakova.
+     * @param duljina koliko praznih znakova treba biti
+     * @return prazan niz (0x20 znakovi)
+     */
+    private String generirajPraznine(int duljina) {
+        String ret = "";
+        
+        for (int i = 0; i < duljina; i++)
+            ret = ret + " ";
+        
+        return ret;
+    }
+    
+    /**
      * Postavlja ili osvjezava sadrzaj u txtRacun.<BR> Poziva se za svaku
      * promjenu u Racun objektu, nacinu placanja, popustu, ...<BR>
      */
@@ -3019,20 +3053,27 @@ public class FrmBlagajna extends javax.swing.JFrame {
          */
         if (frmPostavke.isKolicina()) {
             Hashtable<Proizvod, Integer> kolicina = new Hashtable<Proizvod, Integer>();
+            int najduziNaziv = 0;
             for (Proizvod p : r1.getProizvodi()) {
                 kolicina.put(p, r1.getProizvodKolicina(p));
+                
+                // Spremi podatak koji proizvod ima najveci broj znakova
+                if (p.getNaziv().length() > najduziNaziv) {
+                    najduziNaziv = p.getNaziv().length();
+                }
             }
+            
             // Prodji po hash tablici kolicine proizvoda i
             //  napuni text varijablu
             for (Proizvod p : kolicina.keySet()) {
                 int kolicinaProizvoda = kolicina.get(p);
                                 
-                String stavka = p.getNaziv().trim();
+                String stavka = p.getNaziv();
                 
                 // Ima li stavka vec kolicinu ?
                 // ako se sa Shif+Enter dodaje artikl, onda ima.
                 if (stavka.indexOf(" x") < 0) {                
-                    stavka = stavka + " x" + kolicinaProizvoda;
+                    stavka = stavka + generirajPraznine(najduziNaziv - stavka.length()) + " x" + kolicinaProizvoda;
                 }
                                 
                 /*
